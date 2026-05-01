@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "fetch-pokemon-data": "npx tsx scripts/fetch-pokemon-data.ts"
+  }
+}

@@ -1,0 +1,253 @@
+import { describe, it, expect } from "vitest";
+import { calculateDamage } from "@/contexts/games/lol/damage-calc/domain/services/damage-calculator";
+import type {
+  Champion,
+  ChampionSpecies,
+  Item,
+  SkillAllocation,
+  SkillDamageSpec,
+} from "@/contexts/games/lol/damage-calc/domain/models";
+
+// ── ヘルパー ────────────────────────────────────────────────────────
+
+const LEVEL_ONE = 1;
+const BASE_AD = 50;
+const BASE_ARMOR = 60;
+const BASE_MR = 60;
+
+function skill(
+  slot: "Q" | "W" | "E" | "R",
+  damageType: "physical" | "magic" | "true",
+  baseDamageByRank: number[]
+): SkillDamageSpec {
+  return {
+    slot,
+    name: `${slot} Skill`,
+    damageType,
+    baseDamageByRank,
+    totalAdRatio: 0,
+    bonusAdRatio: 0,
+    apRatio: 0,
+  };
+}
+
+function species(skills: SkillDamageSpec[], armor = BASE_ARMOR, magicResist = BASE_MR): ChampionSpecies {
+  return {
+    id: "TestChamp",
+    name: "テスト",
+    nameEn: "Test",
+    baseStats: {
+      hp: 600,
+      ad: BASE_AD,
+      armor,
+      magicResist,
+      attackSpeed: 0.625,
+    },
+    statGrowth: {
+      hp: 0,
+      ad: 0,
+      armor: 0,
+      magicResist: 0,
+    },
+    skills,
+  };
+}
+
+function item(overrides: Partial<Item["stats"]> = {}): Item {
+  return {
+    id: 2001,
+    name: "テストアイテム",
+    nameEn: "Test Item",
+    stats: {
+      ad: null,
+      ap: null,
+      armor: null,
+      magicResist: null,
+      hp: null,
+      lethality: null,
+      armorPenPercent: null,
+      magicPenFlat: null,
+      magicPenPercent: null,
+      attackSpeed: null,
+      critChance: null,
+      lifeSteal: null,
+      abilityHaste: null,
+      ...overrides,
+    },
+  };
+}
+
+function alloc(overrides: Partial<SkillAllocation> = {}): SkillAllocation {
+  return { q: 1, w: 1, e: 1, r: 1, ...overrides };
+}
+
+function attacker(
+  skills: SkillDamageSpec[],
+  skillAllocation: SkillAllocation,
+  items: Item[] = []
+): Champion {
+  return {
+    species: species(skills, 30, 30),
+    level: LEVEL_ONE,
+    items,
+    skillAllocation,
+  };
+}
+
+function defender(armor = BASE_ARMOR, magicResist = BASE_MR): Champion {
+  return {
+    species: species([], armor, magicResist),
+    level: LEVEL_ONE,
+    items: [],
+    skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+  };
+}
+
+// ── calculateDamage ────────────────────────────────────────────────
+
+describe("calculateDamage", () => {
+  it("物理ダメージ: 防御力60に対して正しく軽減される", () => {
+    const PRE_MITIGATION = 160;
+
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "physical", [PRE_MITIGATION]),
+          skill("W", "magic", [0]),
+          skill("E", "true", [0]),
+          skill("R", "physical", [0]),
+        ],
+        alloc({ q: 1, w: 1, e: 1, r: 1 })
+      ),
+      defender(60, 30)
+    );
+
+    expect(result.skills[0].preMitigation).toBe(PRE_MITIGATION);
+    expect(result.skills[0].effectiveResistance).toBe(60);
+    expect(result.skills[0].postMitigation).toBe(100);
+  });
+
+  it("魔法ダメージ: MR60に対して正しく軽減される", () => {
+    const PRE_MITIGATION = 160;
+
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "magic", [PRE_MITIGATION]),
+          skill("W", "physical", [0]),
+          skill("E", "true", [0]),
+          skill("R", "physical", [0]),
+        ],
+        alloc({ q: 1, w: 1, e: 1, r: 1 })
+      ),
+      defender(30, 60)
+    );
+
+    expect(result.skills[0].preMitigation).toBe(PRE_MITIGATION);
+    expect(result.skills[0].effectiveResistance).toBe(60);
+    expect(result.skills[0].postMitigation).toBe(100);
+  });
+
+  it("true ダメージ: 軽減なし", () => {
+    const PRE_MITIGATION = 123;
+
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "true", [PRE_MITIGATION]),
+          skill("W", "physical", [0]),
+          skill("E", "magic", [0]),
+          skill("R", "physical", [0]),
+        ],
+        alloc({ q: 1, w: 1, e: 1, r: 1 })
+      ),
+      defender()
+    );
+
+    expect(result.skills[0].preMitigation).toBe(PRE_MITIGATION);
+    expect(result.skills[0].effectiveResistance).toBe(0);
+    expect(result.skills[0].postMitigation).toBe(PRE_MITIGATION);
+  });
+
+  it("Lethality: 実効アーマーが armor - lethality になる", () => {
+    const PRE_MITIGATION = 140;
+    const LETHALITY = 20;
+
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "physical", [PRE_MITIGATION]),
+          skill("W", "magic", [0]),
+          skill("E", "true", [0]),
+          skill("R", "physical", [0]),
+        ],
+        alloc({ q: 1, w: 1, e: 1, r: 1 }),
+        [item({ lethality: LETHALITY })]
+      ),
+      defender(60, 30)
+    );
+
+    expect(result.skills[0].effectiveResistance).toBe(40);
+    expect(result.skills[0].postMitigation).toBe(100);
+  });
+
+  it("% アーマーペネトレーション: 実効アーマーが正しく減る", () => {
+    const PRE_MITIGATION = 130;
+    const ARMOR_PEN_PERCENT = 50;
+
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "physical", [PRE_MITIGATION]),
+          skill("W", "magic", [0]),
+          skill("E", "true", [0]),
+          skill("R", "physical", [0]),
+        ],
+        alloc({ q: 1, w: 1, e: 1, r: 1 }),
+        [item({ armorPenPercent: ARMOR_PEN_PERCENT })]
+      ),
+      defender(60, 30)
+    );
+
+    expect(result.skills[0].effectiveResistance).toBe(30);
+    expect(result.skills[0].postMitigation).toBe(100);
+  });
+
+  it("スキルランク0: preMitigation = 0", () => {
+    const BASE_DAMAGE = 100;
+
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "physical", [BASE_DAMAGE]),
+          skill("W", "magic", [0]),
+          skill("E", "true", [0]),
+          skill("R", "physical", [0]),
+        ],
+        alloc({ q: 0, w: 1, e: 0, r: 0 })
+      ),
+      defender()
+    );
+
+    expect(result.skills[0].preMitigation).toBe(0);
+    expect(result.skills[0].postMitigation).toBe(0);
+  });
+
+  it("全4スキル(QWER)の結果配列が返る", () => {
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "physical", [10]),
+          skill("W", "magic", [20]),
+          skill("E", "true", [30]),
+          skill("R", "physical", [40]),
+        ],
+        alloc({ q: 1, w: 1, e: 1, r: 1 })
+      ),
+      defender()
+    );
+
+    expect(result.skills).toHaveLength(4);
+    expect(result.skills.map((skillResult) => skillResult.slot)).toEqual(["Q", "W", "E", "R"]);
+  });
+});

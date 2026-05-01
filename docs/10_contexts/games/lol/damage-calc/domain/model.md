@@ -1,0 +1,216 @@
+# ドメインモデル（lol/damage-calc）
+
+## 集約・Entity・ValueObject 一覧
+
+```
+Champion（集約ルート）
+  ├── ChampionSpecies（ValueObject）  ← 基礎ステータス・成長値・スキル係数
+  ├── Level（ValueObject）            ← 1〜18
+  └── Build（ValueObject）            ← 装備アイテム（最大 6 個）
+        └── Item[]（ValueObject）
+
+SkillAllocation（ValueObject）        ← Q/W/E/R へのスキルポイント振り分け
+  ├── q: number                       ← ランク 0〜5
+  ├── w: number                       ← ランク 0〜5
+  ├── e: number                       ← ランク 0〜5
+  └── r: number                       ← ランク 0〜3
+
+ComputedStats（ValueObject）          ← Champion から導出した最終ステータス
+DamageResult（ValueObject）           ← Q/W/E/R それぞれの計算結果
+```
+
+---
+
+## Champion（集約ルート）
+
+ダメージ計算の攻撃側・防御側どちらにも使う。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `species` | `ChampionSpecies` | チャンピオン種族データ |
+| `level` | `Level` | チャンピオンレベル（1〜18） |
+| `build` | `Build` | 装備アイテム（0〜6個） |
+
+---
+
+## ValueObject 定義
+
+### ChampionSpecies
+
+Meraki Analytics から取得した種族データ。リポジトリから取得するのみで、ユーザーが直接生成しない。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `id` | `string` | Meraki Analytics のチャンピオン ID（例: `"Ahri"`） |
+| `name` | `string` | 日本語名（例: `"アーリ"`） |
+| `nameEn` | `string` | 英語名 |
+| `baseStats` | `ChampionBaseStats` | レベル1時の基礎ステータス |
+| `statGrowth` | `ChampionStatGrowth` | レベルアップごとの成長値 |
+| `skills` | `SkillDamageSpec[]` | Q/W/E/R のダメージ係数一覧 |
+
+### Level
+
+| 制約 | 値 |
+|---|---|
+| 範囲 | 1〜18 |
+
+### Build
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `items` | `Item[]` | 装備アイテム（最大 6 個） |
+
+### Item
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `id` | `number` | Meraki Analytics のアイテム ID |
+| `name` | `string` | 日本語名 |
+| `nameEn` | `string` | 英語名 |
+| `stats` | `ItemStats` | 付与ステータス |
+| `passives` | `ItemPassive[]` | ダメージに影響するパッシブ効果 |
+
+### ItemStats
+
+アイテムが付与するステータス。null はそのアイテムに該当ステータスがないことを示す。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `ad` | `number \| null` | 攻撃力（Attack Damage） |
+| `ap` | `number \| null` | 魔力（Ability Power） |
+| `armor` | `number \| null` | 防御力 |
+| `magicResist` | `number \| null` | 魔法耐性（MR） |
+| `hp` | `number \| null` | 最大HP |
+| `lethality` | `number \| null` | 物理貫通（固定値。防御力を直接減少させる） |
+| `armorPenPercent` | `number \| null` | 物理貫通（%。0〜100） |
+| `magicPenFlat` | `number \| null` | 魔法貫通（固定値） |
+| `magicPenPercent` | `number \| null` | 魔法貫通（%。0〜100） |
+| `attackSpeed` | `number \| null` | 攻撃速度ボーナス（%） |
+| `critChance` | `number \| null` | クリティカル率（%） |
+| `lifeSteal` | `number \| null` | ライフスティール（%） |
+| `abilityHaste` | `number \| null` | アビリティヘイスト |
+
+### ItemPassive
+
+ダメージ計算に影響するパッシブ効果を型で分類する。
+
+```typescript
+type ItemPassive =
+  | { kind: "armorPenPercent"; value: number }   // 例: Last Whisper系（30%物理貫通）
+  | { kind: "magicPenPercent"; value: number }   // 例: Void Staff（40%魔法貫通）
+  | { kind: "bonusAdToAp"; ratio: number }       // ボーナスADをAPに変換するパッシブ
+  | { kind: "other"; description: string }        // 計算対象外の複雑なパッシブ（表示のみ）
+```
+
+> `armorPenPercent` / `magicPenPercent` は `ItemStats` にも存在するが、アイテムによっては
+> ステータスではなくパッシブとして実装されているため、両方を確認して合算する。
+
+### SkillSlot
+
+```
+"Q" | "W" | "E" | "R"
+```
+
+### SkillDamageSpec
+
+Meraki Analytics から取得したスキルのダメージ係数。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `slot` | `SkillSlot` | Q / W / E / R |
+| `name` | `string` | スキル名 |
+| `damageType` | `DamageType` | ダメージ種別 |
+| `baseDamageByRank` | `number[]` | ランク別基礎ダメージ（rank 1〜5、Rは1〜3） |
+| `totalAdRatio` | `number` | 総AD（基礎AD+ボーナスAD）に対するスケーリング係数 |
+| `bonusAdRatio` | `number` | ボーナスAD（アイテム等）のみに対するスケーリング係数 |
+| `apRatio` | `number` | AP に対するスケーリング係数 |
+
+> 係数の例: `totalAdRatio: 1.1` = 総AD × 110% がスキルダメージに加算される。
+
+### DamageType
+
+```
+"physical" | "magic" | "true"
+```
+
+### ChampionBaseStats
+
+レベル1時のチャンピオン基礎ステータス。
+
+| フィールド | 型 |
+|---|---|
+| `hp` | `number` |
+| `ad` | `number` |
+| `armor` | `number` |
+| `magicResist` | `number` |
+| `attackSpeed` | `number` |
+
+### ChampionStatGrowth
+
+レベルアップごとの成長値（Meraki Analytics の `growthperlevel` に相当）。
+
+| フィールド | 型 |
+|---|---|
+| `hp` | `number` |
+| `ad` | `number` |
+| `armor` | `number` |
+| `magicResist` | `number` |
+
+---
+
+## ComputedStats（ValueObject）
+
+`Champion`（species + level + build）から計算した最終ステータス。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `totalAd` | `number` | 総攻撃力（基礎AD + ボーナスAD） |
+| `bonusAd` | `number` | ボーナスAD（アイテム由来のみ） |
+| `ap` | `number` | 魔力 |
+| `armor` | `number` | 総防御力 |
+| `magicResist` | `number` | 総魔法耐性 |
+| `hp` | `number` | 最大HP |
+| `lethality` | `number` | 総Lethality |
+| `armorPenPercent` | `number` | 総物理貫通%（0〜100） |
+| `magicPenFlat` | `number` | 総魔法貫通（固定値） |
+| `magicPenPercent` | `number` | 総魔法貫通%（0〜100） |
+
+`ComputedStats` は `Champion` から導出されるため、domain サービス `StatsComputer` が計算する。
+
+---
+
+## SkillAllocation（ValueObject）
+
+攻撃側チャンピオンの Q/W/E/R へのスキルポイント振り分け。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `q` | `number` | Q のランク（0〜5。0 = 未習得） |
+| `w` | `number` | W のランク（0〜5。0 = 未習得） |
+| `e` | `number` | E のランク（0〜5。0 = 未習得） |
+| `r` | `number` | R のランク（0〜3。0 = 未習得） |
+
+不変条件は `domain/rules.md` の「スキルポイント振り分け」を参照。
+
+---
+
+## DamageResult（ValueObject）
+
+Q/W/E/R 全スキルの計算結果をまとめたもの。
+
+```typescript
+type DamageResult = {
+  skills: SkillDamageResult[];  // Q/W/E/R 順（未習得スキルも含む）
+};
+
+type SkillDamageResult = {
+  slot: SkillSlot;
+  skillName: string;
+  rank: number;                    // 現在のランク（0 = 未習得）
+  damageType: DamageType;
+  preMitigationDamage: number;     // 未習得の場合は 0
+  effectiveResistance: number;     // 貫通適用後の有効防御力 or 有効MR（真のダメージは 0）
+  postMitigationDamage: number;    // 最終ダメージ（小数点以下切り捨て）
+  damageReductionPercent: number;  // 耐性による軽減率（%）
+};
+```

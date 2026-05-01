@@ -1,0 +1,6 @@
+app/.next
+app/node_modules
+app/.git
+*.md
+notes/
+docs/

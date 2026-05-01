@@ -1,0 +1,16 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: deps
+    image: damekei-dev
+    working_dir: /app
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
