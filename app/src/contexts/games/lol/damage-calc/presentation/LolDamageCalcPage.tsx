@@ -33,10 +33,11 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
   const [defLevel, setDefLevel] = useState(1);
   const [defItems, setDefItems] = useState<number[]>([]);
 
-  const [results, setResults] = useState<SkillDamageResultDto[]>([]);
+  const [results, setResults] = useState<SkillDamageResultDto[] | null>(null);
+  // null = no champions selected; array = calculation result (may contain zero-damage skills)
   const [error, setError] = useState<string | null>(null);
 
-  // Reset allocation when level changes: clamp each rank and recalculate
+  // Clamp allocation when level decreases
   useEffect(() => {
     setAtkAlloc((prev) => {
       const maxR = Math.floor((atkLevel - 1) / 5);
@@ -51,12 +52,7 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
 
   useEffect(() => {
     if (!atkChampion || !defChampion) {
-      setResults([]);
-      return;
-    }
-    const total = atkAlloc.q + atkAlloc.w + atkAlloc.e + atkAlloc.r;
-    if (total !== atkLevel) {
-      setResults([]);
+      setResults(null);
       return;
     }
     setError(null);
@@ -102,7 +98,11 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
 
       <div className="border border-gray-200 rounded-lg p-4">
         <h2 className="font-semibold text-lg mb-3 text-foreground">ダメージ結果</h2>
-        <DamageResultTable skills={results} />
+        {results === null ? (
+          <div className="text-sm text-foreground text-center py-4">チャンピオンを選択してください</div>
+        ) : (
+          <DamageResultTable skills={results} />
+        )}
       </div>
     </div>
   );

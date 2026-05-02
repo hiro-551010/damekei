@@ -67,12 +67,12 @@ export type SkillAllocation = {
 
 export function validateSkillAllocation(alloc: SkillAllocation, level: number): void {
   const total = alloc.q + alloc.w + alloc.e + alloc.r;
-  if (total !== level) {
+  const maxR = Math.floor((level - 1) / 5);
+  if (total > level) {
     throw new InvalidSkillAllocationError(
-      `Skill points total (${total}) must equal champion level (${level})`
+      `Skill points total (${total}) exceeds champion level (${level})`
     );
   }
-  const maxR = Math.floor((level - 1) / 5);
   if (alloc.r > maxR) {
     throw new InvalidSkillAllocationError(
       `R rank (${alloc.r}) exceeds max allowed (${maxR}) at level ${level}`
