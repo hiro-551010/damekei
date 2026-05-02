@@ -212,5 +212,6 @@ type SkillDamageResult = {
   effectiveResistance: number;     // 貫通適用後の有効防御力 or 有効MR（真のダメージは 0）
   postMitigationDamage: number;    // 最終ダメージ（小数点以下切り捨て）
   damageReductionPercent: number;  // 耐性による軽減率（%）
+  hpPercent: number;               // 防御側HPに対するダメージ割合（%）= postMitigationDamage / defenderHp × 100
 };
 ```

@@ -96,6 +96,7 @@ export type ComputedStats = {
   ap: number;
   armor: number;
   magicResist: number;
+  hp: number;
   lethality: number;
   armorPenPercent: number;
   magicPenFlat: number;
@@ -110,6 +111,7 @@ export type SkillDamageResult = {
   effectiveResistance: number;
   postMitigation: number;
   reductionPercent: number;
+  hpPercent: number;
 };
 
 export type DamageResult = {

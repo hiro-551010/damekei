@@ -109,6 +109,7 @@ Q / W / E / R の 4 行でダメージを一覧表示する。
 | 有効防御力 | `effectiveResistance`（物理 = 有効アーマー、魔法 = 有効MR、真 = −） |
 | 最終ダメージ | `postMitigationDamage`（太字で強調） |
 | 軽減率 | `damageReductionPercent`（%） |
+| HP削減割合 | `hpPercent`（%）= 最終ダメージ / 防御側総HP × 100 |
 
 - 未習得スキル（rank = 0）は行をグレーアウトし、ダメージを `—` で表示
 - チャンピオンまたはスキル振り分けが未設定の場合はプレースホルダー行を表示

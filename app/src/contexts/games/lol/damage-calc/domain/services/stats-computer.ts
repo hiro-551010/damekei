@@ -15,6 +15,7 @@ export function computeStats(champion: Champion): ComputedStats {
   let ap = 0;
   let bonusArmor = 0;
   let bonusMagicResist = 0;
+  let bonusHp = 0;
   let lethality = 0;
   let armorPenPercent = 0;
   let magicPenFlat = 0;
@@ -26,6 +27,7 @@ export function computeStats(champion: Champion): ComputedStats {
     ap += s.ap ?? 0;
     bonusArmor += s.armor ?? 0;
     bonusMagicResist += s.magicResist ?? 0;
+    bonusHp += s.hp ?? 0;
     lethality += s.lethality ?? 0;
     armorPenPercent += s.armorPenPercent ?? 0;
     magicPenFlat += s.magicPenFlat ?? 0;
@@ -38,6 +40,7 @@ export function computeStats(champion: Champion): ComputedStats {
     ap,
     armor: statAtLevel(baseStats.armor, statGrowth.armor, level) + bonusArmor,
     magicResist: statAtLevel(baseStats.magicResist, statGrowth.magicResist, level) + bonusMagicResist,
+    hp: statAtLevel(baseStats.hp, statGrowth.hp, level) + bonusHp,
     lethality,
     armorPenPercent,
     magicPenFlat,

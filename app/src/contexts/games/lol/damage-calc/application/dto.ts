@@ -74,6 +74,7 @@ export type SkillDamageResultDto = {
   effectiveResistance: number;
   postMitigation: number;
   reductionPercent: number;
+  hpPercent: number;
 };
 
 export type CalculateDamageResultDto = {

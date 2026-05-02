@@ -133,7 +133,7 @@ export default function SearchableSelect<T>({
           ) : selected ? (
             <div className="truncate">{renderSelected(selected)}</div>
           ) : (
-            <span className="text-[13px] text-zinc-400">{placeholder}</span>
+            <span className="text-[13px] text-black">{placeholder}</span>
           )}
         </div>
 
@@ -141,12 +141,12 @@ export default function SearchableSelect<T>({
           {selected && !open && (
             <button
               onClick={clear}
-              className="rounded-full p-0.5 text-zinc-300 hover:bg-zinc-100 hover:text-zinc-500 text-xs leading-none"
+              className="rounded-full p-0.5 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-800 text-xs leading-none"
             >
               ✕
             </button>
           )}
-          <span className="text-[10px] text-zinc-300">{open ? "▴" : "▾"}</span>
+          <span className="text-[10px] text-zinc-600">{open ? "▴" : "▾"}</span>
         </div>
       </div>
 

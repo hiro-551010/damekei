@@ -14,7 +14,7 @@ const DAMAGE_TYPE_LABEL: Record<string, string> = {
 
 export function DamageResultTable({ skills }: Props) {
   if (skills.length === 0) {
-    return <div className="text-sm text-gray-400 text-center py-4">チャンピオンを選択してください</div>;
+    return <div className="text-sm text-foreground text-center py-4">チャンピオンを選択してください</div>;
   }
 
   return (
@@ -28,6 +28,7 @@ export function DamageResultTable({ skills }: Props) {
             <th className="text-right py-2 px-3 font-semibold">実効耐性</th>
             <th className="text-right py-2 px-3 font-semibold">ダメージ（軽減後）</th>
             <th className="text-right py-2 px-3 font-semibold">軽減率</th>
+            <th className="text-right py-2 px-3 font-semibold">HP削減割合</th>
           </tr>
         </thead>
         <tbody>
@@ -35,7 +36,7 @@ export function DamageResultTable({ skills }: Props) {
             <tr key={s.slot} className="border-b border-gray-100 hover:bg-gray-50">
               <td className="py-2 px-3">
                 <span className="font-bold mr-2 uppercase">{s.slot}</span>
-                <span className="text-gray-600">{s.name}</span>
+                <span className="text-foreground">{s.name}</span>
               </td>
               <td className="py-2 px-3">
                 <span
@@ -52,9 +53,10 @@ export function DamageResultTable({ skills }: Props) {
                 </span>
               </td>
               <td className="py-2 px-3 text-right tabular-nums">{s.preMitigation}</td>
-              <td className="py-2 px-3 text-right tabular-nums text-gray-500">{s.effectiveResistance}</td>
+              <td className="py-2 px-3 text-right tabular-nums text-foreground">{s.effectiveResistance}</td>
               <td className="py-2 px-3 text-right tabular-nums font-semibold">{s.postMitigation}</td>
-              <td className="py-2 px-3 text-right tabular-nums text-gray-500">{s.reductionPercent}%</td>
+              <td className="py-2 px-3 text-right tabular-nums text-foreground">{s.reductionPercent}%</td>
+              <td className="py-2 px-3 text-right tabular-nums font-semibold text-blue-600">{s.hpPercent}%</td>
             </tr>
           ))}
         </tbody>

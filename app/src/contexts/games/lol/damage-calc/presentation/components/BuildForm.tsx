@@ -29,22 +29,22 @@ export function BuildForm({ items, selectedIds, onChange, maxItems = 6 }: Props)
 
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium">ビルド（{selectedIds.length}/{maxItems}）</div>
+      <div className="text-sm font-medium text-foreground">ビルド（{selectedIds.length}/{maxItems}）</div>
       {selectedIds.length < maxItems && (
         <SearchableSelect<number>
           options={options}
           value={null}
           onChange={addItem}
           placeholder="アイテムを検索..."
-          renderOption={(opt) => <span className="text-sm">{opt.searchText}</span>}
-          renderSelected={(opt) => <span className="text-sm">{opt.searchText}</span>}
+          renderOption={(opt) => <span className="text-sm text-black">{opt.searchText}</span>}
+          renderSelected={(opt) => <span className="text-sm text-black">{opt.searchText}</span>}
         />
       )}
       <div className="flex flex-wrap gap-1">
         {selectedItems.map((item) => (
           <span
             key={item.id}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 text-sm"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 text-sm text-black"
           >
             {item.name}
             <button

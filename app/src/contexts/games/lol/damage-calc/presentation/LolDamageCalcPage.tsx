@@ -101,7 +101,7 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
       )}
 
       <div className="border border-gray-200 rounded-lg p-4">
-        <h2 className="font-semibold text-lg mb-3">ダメージ結果</h2>
+        <h2 className="font-semibold text-lg mb-3 text-foreground">ダメージ結果</h2>
         <DamageResultTable skills={results} />
       </div>
     </div>

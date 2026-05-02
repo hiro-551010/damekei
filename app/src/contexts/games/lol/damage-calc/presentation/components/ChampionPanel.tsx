@@ -39,22 +39,22 @@ export function ChampionPanel({
 
   return (
     <div className="border border-gray-200 rounded-lg p-4 space-y-4">
-      <h2 className="font-semibold text-lg">{title}</h2>
+      <h2 className="font-semibold text-lg text-foreground">{title}</h2>
 
       <div className="space-y-1">
-        <label className="text-sm font-medium">チャンピオン</label>
+        <label className="text-sm font-medium text-foreground">チャンピオン</label>
         <SearchableSelect<string>
           options={options}
           value={selectedChampionId}
           onChange={onChampionChange}
           placeholder="チャンピオンを検索..."
-          renderOption={(opt) => <span className="text-sm">{opt.searchText}</span>}
-          renderSelected={(opt) => <span className="text-sm font-semibold">{opt.searchText}</span>}
+          renderOption={(opt) => <span className="text-sm text-black">{opt.searchText}</span>}
+          renderSelected={(opt) => <span className="text-sm font-semibold text-black">{opt.searchText}</span>}
         />
       </div>
 
       <div className="space-y-1">
-        <label className="text-sm font-medium">レベル</label>
+        <label className="text-sm font-medium text-foreground">レベル</label>
         <div className="flex items-center gap-2">
           <input
             type="range"
@@ -64,7 +64,7 @@ export function ChampionPanel({
             onChange={(e) => onLevelChange(Number(e.target.value))}
             className="flex-1"
           />
-          <span className="w-8 text-center font-semibold">{level}</span>
+          <span className="w-8 text-center font-semibold text-foreground">{level}</span>
         </div>
       </div>
 

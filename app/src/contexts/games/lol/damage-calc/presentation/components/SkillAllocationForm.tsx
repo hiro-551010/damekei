@@ -27,13 +27,13 @@ export function SkillAllocationForm({ level, allocation, onChange }: Props) {
 
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium">スキル配分（残り: {remaining}）</div>
+      <div className="text-sm font-medium text-foreground">スキル配分（残り: {remaining}）</div>
       {SLOTS.map((slot) => {
         const current = allocation[slot];
         const maxRank = slot === "r" ? maxRForLevel(level) : MAX_RANK;
         return (
           <div key={slot} className="flex items-center gap-2">
-            <span className="w-4 text-sm font-bold uppercase">{slot}</span>
+            <span className="w-4 text-sm font-bold uppercase text-foreground">{slot}</span>
             <div className="flex gap-1">
               {Array.from({ length: maxRank }, (_, i) => i + 1).map((rank) => {
                 const isActive = rank <= current;
@@ -48,8 +48,8 @@ export function SkillAllocationForm({ level, allocation, onChange }: Props) {
                       isActive
                         ? "bg-blue-500 text-white border-blue-600"
                         : canAdd
-                        ? "bg-white border-gray-300 hover:bg-blue-50"
-                        : "bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed",
+                        ? "bg-white text-black border-gray-300 hover:bg-blue-50"
+                        : "bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed",
                     ].join(" ")}
                     disabled={!canClick}
                   >

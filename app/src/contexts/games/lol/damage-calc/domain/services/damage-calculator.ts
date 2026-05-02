@@ -38,6 +38,7 @@ export function calculateDamage(attacker: Champion, defender: Champion): DamageR
         effectiveResistance: 0,
         postMitigation: 0,
         reductionPercent: 0,
+        hpPercent: 0,
       };
     }
 
@@ -66,6 +67,10 @@ export function calculateDamage(attacker: Champion, defender: Champion): DamageR
       ? ((preMitigation - postMitigation) / preMitigation) * 100
       : 0;
 
+    const hpPercent = defStats.hp > 0
+      ? (postMitigation / defStats.hp) * 100
+      : 0;
+
     return {
       slot: spec.slot,
       name: spec.name,
@@ -74,6 +79,7 @@ export function calculateDamage(attacker: Champion, defender: Champion): DamageR
       effectiveResistance: Math.round(effectiveResistance * 10) / 10,
       postMitigation: Math.round(postMitigation),
       reductionPercent: Math.round(reductionPercent * 10) / 10,
+      hpPercent: Math.round(hpPercent * 10) / 10,
     };
   });
 
