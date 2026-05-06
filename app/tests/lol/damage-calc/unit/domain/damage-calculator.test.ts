@@ -375,6 +375,18 @@ describe("calculateDamage", () => {
     expect(result.autoAttack.onHitPhysicalPostMitigation).toBe(210);
   });
 
+  it("Blade of the Ruined King（onHitPhysicalCurrentHpPercent）: 満HPの9%がアーマー軽減後に返る", () => {
+    const botrk = item({}, [{ kind: "onHitPhysicalCurrentHpPercent", percent: 9 }]);
+    const def = defender(60, 0);
+    const result = calculateDamage(
+      attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [botrk]),
+      def
+    );
+    // defStats.hp = 600, preMit = 9% * 600 = 54, effArmor = 60
+    const preMit = 0.09 * 600;
+    expect(result.autoAttack.onHitPhysicalPostMitigation).toBe(Math.round(preMit * (100 / 160)));
+  });
+
   it("Nashor's Tooth（onHitMagicDamageScaled）: base + AP比率がMR軽減後に返る", () => {
     const nashor = item({ ap: 100 }, [{ kind: "onHitMagicDamageScaled", base: 15, apRatio: 0.15 }]);
     const result = calculateDamage(

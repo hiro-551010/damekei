@@ -8,7 +8,7 @@
 | 2 | Statikk Shiv | オンヒット雷撃魔法ダメージ | done |
 | 3 | Rabadon's Deathcap | AP 30% 増幅 | done |
 | 4 | Kraken Slayer | 3回目ヒット物理ダメージ（レベルスケール） | done |
-| 5 | Blade of the Ruined King | 現在HP% 物理オンヒット | pending |
+| 5 | Blade of the Ruined King | 現在HP% 物理オンヒット | done |
 | 6 | Nashor's Tooth | AP オンヒット魔法ダメージ | done |
 | 7 | Wit's End | オンヒット魔法ダメージ | done |
 | 8 | Trinity Force | スペルブレード | pending |
