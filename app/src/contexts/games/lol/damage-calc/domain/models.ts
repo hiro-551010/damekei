@@ -128,6 +128,8 @@ export type AutoAttackResult = {
   critHpPercent: number | null;
   onHitMagicPostMitigation: number | null;
   onHitMagicHpPercent: number | null;
+  onHitPhysicalPostMitigation: number | null;
+  onHitPhysicalHpPercent: number | null;
 };
 
 export type SkillDamageResult = {

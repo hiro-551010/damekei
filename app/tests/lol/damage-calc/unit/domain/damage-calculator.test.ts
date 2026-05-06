@@ -346,6 +346,35 @@ describe("calculateDamage", () => {
     expect(result.skills[0].preMitigation).toBe(130);
   });
 
+  it("onHitPhysicalPostMitigation パッシブなし: null が返る", () => {
+    const result = calculateDamage(
+      attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 })),
+      defender()
+    );
+
+    expect(result.autoAttack.onHitPhysicalPostMitigation).toBeNull();
+    expect(result.autoAttack.onHitPhysicalHpPercent).toBeNull();
+  });
+
+  it("Kraken Slayer（nthHitPhysical）: Lv1で minDamage、アーマー軽減後の値が返る", () => {
+    const kraken = item({}, [{ kind: "nthHitPhysical", hitCount: 3, minDamage: 150, maxDamage: 210 }]);
+    const result = calculateDamage(
+      { ...attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [kraken]), level: 1 },
+      defender(60, 0)
+    );
+    // Lv1: 150 + (210-150) * 0/17 = 150
+    expect(result.autoAttack.onHitPhysicalPostMitigation).toBe(Math.round(150 * (100 / 160)));
+  });
+
+  it("Kraken Slayer（nthHitPhysical）: Lv18で maxDamage になる", () => {
+    const kraken = item({}, [{ kind: "nthHitPhysical", hitCount: 3, minDamage: 150, maxDamage: 210 }]);
+    const result = calculateDamage(
+      { ...attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [kraken]), level: 18 },
+      defender(0, 0)
+    );
+    expect(result.autoAttack.onHitPhysicalPostMitigation).toBe(210);
+  });
+
   it("Nashor's Tooth（onHitMagicDamageScaled）: base + AP比率がMR軽減後に返る", () => {
     const nashor = item({ ap: 100 }, [{ kind: "onHitMagicDamageScaled", base: 15, apRatio: 0.15 }]);
     const result = calculateDamage(

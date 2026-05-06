@@ -248,6 +248,8 @@ type AutoAttackResult = {
   critHpPercent: number | null;
   onHitMagicPostMitigation: number | null;  // null = オンヒット魔法ダメージなし
   onHitMagicHpPercent: number | null;
+  onHitPhysicalPostMitigation: number | null;  // null = 物理オンヒットダメージなし（BotRK / Kraken / Spellblade）
+  onHitPhysicalHpPercent: number | null;
 };
 
 type SkillDamageResult = {
@@ -265,3 +267,4 @@ type SkillDamageResult = {
 
 > オートアタック: preMitigation = totalAd（物理ダメージ）。クリティカルは totalAd × 1.75。
 > critPostMitigation は攻撃側の critChance が 0 のとき null とし、表示側でハイフンを出す。
+> onHitPhysicalPostMitigation は物理オンヒット（BotRK・Kraken Slayer・Spellblade）の合算。計算機は満HP・Kraken3回目・スペルブレード常時発動を前提とする。

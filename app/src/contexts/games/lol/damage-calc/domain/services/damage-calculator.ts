@@ -63,6 +63,25 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
     ? Math.round((onHitMagicPostMitigation / defStats.hp) * 1000) / 10
     : null;
 
+  // Physical on-hit (nthHitPhysical / onHitPhysicalCurrentHpPercent / spellblade)
+  let onHitPhysicalPreMitigation = 0;
+  const baseAd = atkStats.totalAd - atkStats.bonusAd;
+  for (const p of attacker.items.flatMap((i) => i.passives)) {
+    if (p.kind === "nthHitPhysical") {
+      onHitPhysicalPreMitigation += p.minDamage + (p.maxDamage - p.minDamage) * (attacker.level - 1) / 17;
+    } else if (p.kind === "onHitPhysicalCurrentHpPercent") {
+      onHitPhysicalPreMitigation += (p.percent / 100) * defStats.hp;
+    } else if (p.kind === "spellblade") {
+      onHitPhysicalPreMitigation += p.baseAdRatio * baseAd;
+    }
+  }
+  const onHitPhysicalPostMitigation = onHitPhysicalPreMitigation > 0
+    ? Math.round(mitigate(onHitPhysicalPreMitigation, effArmor))
+    : null;
+  const onHitPhysicalHpPercent = onHitPhysicalPostMitigation !== null && defStats.hp > 0
+    ? Math.round((onHitPhysicalPostMitigation / defStats.hp) * 1000) / 10
+    : null;
+
   return {
     preMitigation: Math.round(preMitigation),
     effectiveResistance: Math.round(effArmor * 10) / 10,
@@ -73,6 +92,8 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
     critHpPercent: critHpPercent !== null ? Math.round(critHpPercent * 10) / 10 : null,
     onHitMagicPostMitigation,
     onHitMagicHpPercent,
+    onHitPhysicalPostMitigation,
+    onHitPhysicalHpPercent,
   };
 }
 
