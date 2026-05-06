@@ -4,7 +4,7 @@
 
 | # | アイテム | 内容 | 状態 |
 |---|----------|------|------|
-| 1 | Infinity Edge | クリットダメージ倍率増加（60%以上クリ時 175%→210%） | pending |
+| 1 | Infinity Edge | クリットダメージ倍率増加（60%以上クリ時 175%→210%） | done |
 | 2 | Statikk Shiv | オンヒット雷撃魔法ダメージ | pending |
 | 3 | Last Whisper | 10% 物理貫通 | pending |
 | 4 | Lord Dominik's Regards | 30% 物理貫通 | pending |
