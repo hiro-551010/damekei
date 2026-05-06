@@ -11,7 +11,7 @@
 | 5 | Blade of the Ruined King | 現在HP% 物理オンヒット | done |
 | 6 | Nashor's Tooth | AP オンヒット魔法ダメージ | done |
 | 7 | Wit's End | オンヒット魔法ダメージ | done |
-| 8 | Trinity Force | スペルブレード | pending |
+| 8 | Trinity Force | スペルブレード | done |
 
 ## チャンピオンパッシブ・エッジケース実装
 

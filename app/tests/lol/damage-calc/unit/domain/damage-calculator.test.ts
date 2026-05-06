@@ -387,6 +387,27 @@ describe("calculateDamage", () => {
     expect(result.autoAttack.onHitPhysicalPostMitigation).toBe(Math.round(preMit * (100 / 160)));
   });
 
+  it("Trinity Force（spellblade）: 基礎AD × 2.0 がアーマー軽減後に返る", () => {
+    const trinity = item({ ad: 30 }, [{ kind: "spellblade", baseAdRatio: 2.0 }]);
+    const result = calculateDamage(
+      attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [trinity]),
+      defender(60, 0)
+    );
+    // baseAd = BASE_AD = 50 (growth = 0, level = 1), preMit = 2.0 * 50 = 100
+    expect(result.autoAttack.onHitPhysicalPostMitigation).toBe(Math.round(100 * (100 / 160)));
+  });
+
+  it("Trinity Force + Kraken: 物理オンヒットが合算される", () => {
+    const trinity = item({ ad: 0 }, [{ kind: "spellblade", baseAdRatio: 2.0 }]);
+    const kraken = item({}, [{ kind: "nthHitPhysical", hitCount: 3, minDamage: 150, maxDamage: 210 }]);
+    const result = calculateDamage(
+      { ...attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [trinity, kraken]), level: 1 },
+      defender(0, 0)
+    );
+    // baseAd = 50, spellblade = 100, kraken Lv1 = 150 → total = 250
+    expect(result.autoAttack.onHitPhysicalPostMitigation).toBe(250);
+  });
+
   it("Nashor's Tooth（onHitMagicDamageScaled）: base + AP比率がMR軽減後に返る", () => {
     const nashor = item({ ap: 100 }, [{ kind: "onHitMagicDamageScaled", base: 15, apRatio: 0.15 }]);
     const result = calculateDamage(
