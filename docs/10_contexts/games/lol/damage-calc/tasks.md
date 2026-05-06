@@ -6,7 +6,7 @@
 |---|----------|------|------|
 | 1 | Infinity Edge | クリットダメージ倍率増加（40%以上クリ時 175%→210%） | done |
 | 2 | Statikk Shiv | オンヒット雷撃魔法ダメージ | done |
-| 3 | Rabadon's Deathcap | AP 30% 増幅 | pending |
+| 3 | Rabadon's Deathcap | AP 30% 増幅 | done |
 | 4 | Kraken Slayer | 3回目ヒット物理ダメージ（レベルスケール） | pending |
 | 5 | Blade of the Ruined King | 現在HP% 物理オンヒット | pending |
 | 6 | Nashor's Tooth | AP オンヒット魔法ダメージ | pending |

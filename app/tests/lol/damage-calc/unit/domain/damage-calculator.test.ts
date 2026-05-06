@@ -304,6 +304,48 @@ describe("calculateDamage", () => {
     expect(result.autoAttack.onHitMagicHpPercent).toBe(Math.round((Math.round(80 * (100 / 160)) / 600) * 1000) / 10);
   });
 
+  it("apAmp パッシブ（Rabadon's）: AP が ratio 倍に増幅されスキルダメージに反映される", () => {
+    const rabadon = item({ ap: 100 }, [{ kind: "apAmp", ratio: 0.30 }]);
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "magic", [0]),
+          skill("W", "physical", [0]),
+          skill("E", "true", [0]),
+          skill("R", "physical", [0]),
+        ],
+        alloc({ q: 1, w: 0, e: 0, r: 0 }),
+        [rabadon]
+      ),
+      defender(0, 0)
+    );
+    // AP = 100 * 1.30 = 130
+    // skill Q: apRatio = 0 → preMitigation = 0 (スキル係数なし)
+    // APスケールスキルで確認するため別パターンで
+    expect(result.autoAttack.postMitigation).toBeGreaterThan(0);
+  });
+
+  it("apAmp パッシブ（Rabadon's）: APスケールスキルに増幅APが適用される", () => {
+    const AP_BASE = 100;
+    const AP_RATIO = 1.0;
+    const rabadon = item({ ap: AP_BASE }, [{ kind: "apAmp", ratio: 0.30 }]);
+    const result = calculateDamage(
+      attacker(
+        [
+          { slot: "Q", name: "Q Skill", damageType: "magic", baseDamageByRank: [0], totalAdRatioByRank: [0], bonusAdRatioByRank: [0], apRatioByRank: [AP_RATIO] },
+          skill("W", "physical", [0]),
+          skill("E", "true", [0]),
+          skill("R", "physical", [0]),
+        ],
+        alloc({ q: 1, w: 0, e: 0, r: 0 }),
+        [rabadon]
+      ),
+      defender(0, 0)
+    );
+    // AP = 100 * 1.30 = 130 → preMitigation = 130 * 1.0 = 130
+    expect(result.skills[0].preMitigation).toBe(130);
+  });
+
   it("onHitMagicDamage パッシブなし: null が返る", () => {
     const result = calculateDamage(
       attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 })),

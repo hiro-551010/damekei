@@ -36,6 +36,12 @@ export function computeStats(champion: Champion): ComputedStats {
     critChance += s.critChance ?? 0;
   }
 
+  const apAmpTotal = items
+    .flatMap((i) => i.passives)
+    .filter((p): p is { kind: "apAmp"; ratio: number } => p.kind === "apAmp")
+    .reduce((sum, p) => sum + p.ratio, 0);
+  ap = ap * (1 + apAmpTotal);
+
   return {
     totalAd: baseAd + bonusAd,
     bonusAd,
