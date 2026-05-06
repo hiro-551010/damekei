@@ -17,7 +17,7 @@
 
 | # | チャンピオン | 状態 |
 |---|-------------|------|
-| 14 | Aatrox | pending |
+| 14 | Aatrox | done |
 | 15 | Ahri | pending |
 | 16 | Akali | pending |
 | 17 | Akshan | pending |

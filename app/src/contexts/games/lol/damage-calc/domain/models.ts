@@ -24,6 +24,22 @@ export type SkillDamageSpec = {
   totalAdRatioByRank: number[];
   bonusAdRatioByRank: number[];
   apRatioByRank: number[];
+  variants?: SkillVariantSpec[];
+};
+
+export type ChampionPassiveSpec =
+  | { kind: "onHitMaxHpPercent"; percentByLevel: number[]; damageType: DamageType };
+
+export type SkillVariantSpec = {
+  name: string;
+  multiplier: number;
+};
+
+export type ChampionStateModifier = {
+  kind: "bonusAdFromBaseAd";
+  name: string;
+  triggerSlot: SkillSlot;
+  percentByRank: number[];
 };
 
 export type ChampionSpecies = {
@@ -33,6 +49,8 @@ export type ChampionSpecies = {
   baseStats: ChampionBaseStats;
   statGrowth: ChampionStatGrowth;
   skills: SkillDamageSpec[];
+  passiveSpec?: ChampionPassiveSpec;
+  stateModifiers?: ChampionStateModifier[];
 };
 
 export type ItemStats = {
@@ -132,6 +150,32 @@ export type AutoAttackResult = {
   onHitPhysicalHpPercent: number | null;
 };
 
+export type SkillVariantResult = {
+  name: string;
+  preMitigation: number;
+  effectiveResistance: number;
+  postMitigation: number;
+  reductionPercent: number;
+  hpPercent: number;
+};
+
+export type ChampionPassiveAAResult = {
+  damageType: DamageType;
+  preMitigation: number;
+  effectiveResistance: number;
+  postMitigation: number;
+  reductionPercent: number;
+  hpPercent: number;
+};
+
+export type ChampionStateResult = {
+  stateName: string;
+  rank: number;
+  autoAttack: AutoAttackResult;
+  skills: SkillDamageResult[];
+  championPassiveAA?: ChampionPassiveAAResult;
+};
+
 export type SkillDamageResult = {
   slot: SkillSlot;
   name: string;
@@ -141,9 +185,12 @@ export type SkillDamageResult = {
   postMitigation: number;
   reductionPercent: number;
   hpPercent: number;
+  variants?: SkillVariantResult[];
 };
 
 export type DamageResult = {
   autoAttack: AutoAttackResult;
   skills: SkillDamageResult[];
+  championPassiveAA?: ChampionPassiveAAResult;
+  stateResults?: ChampionStateResult[];
 };

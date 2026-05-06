@@ -452,3 +452,143 @@ describe("calculateDamage", () => {
     expect(result.autoAttack.onHitMagicHpPercent).toBeNull();
   });
 });
+
+// ── Aatrox 固有ロジック ──────────────────────────────────────────────
+
+describe('Aatrox 固有ロジック', () => {
+  function aatroxSpecies(): ChampionSpecies {
+    return {
+      id: 'Aatrox',
+      name: 'アートロックス',
+      nameEn: 'Aatrox',
+      baseStats: { hp: 650, ad: 60, armor: 38, magicResist: 32, attackSpeed: 0.651 },
+      statGrowth: { hp: 0, ad: 0, armor: 0, magicResist: 0 },
+      skills: [
+        {
+          slot: 'Q',
+          name: 'ダーキン・ブレード',
+          damageType: 'physical',
+          baseDamageByRank: [10, 20, 30, 40, 50],
+          totalAdRatioByRank: [1.0, 1.0, 1.0, 1.0, 1.0],
+          bonusAdRatioByRank: [0, 0, 0, 0, 0],
+          apRatioByRank: [0, 0, 0, 0, 0],
+          variants: [{ name: 'スイートスポット', multiplier: 1.7 }],
+        },
+        skill('W', 'magic', [0, 0, 0, 0, 0]),
+        skill('E', 'physical', [0, 0, 0, 0, 0]),
+        skill('R', 'physical', [0, 0, 0]),
+      ],
+      passiveSpec: {
+        kind: 'onHitMaxHpPercent',
+        percentByLevel: [4.0, 4.39, 4.79, 5.18, 5.58, 5.97, 6.37, 6.76, 7.16, 7.55, 7.95, 8.34, 8.74, 9.13, 9.53, 9.92, 10.32, 10.71],
+        damageType: 'physical',
+      },
+      stateModifiers: [
+        {
+          kind: 'bonusAdFromBaseAd',
+          name: 'R (World Ender)',
+          triggerSlot: 'R',
+          percentByRank: [20, 30, 40],
+        },
+      ],
+    };
+  }
+
+  it('パッシブAA: Lv1でのHP%物理ダメージが返る', () => {
+    const def: Champion = {
+      species: species([], 0, 0),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const atk: Champion = {
+      species: aatroxSpecies(),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const result = calculateDamage(atk, def);
+    // Lv1: 4.0% of 600HP = 24
+    expect(result.championPassiveAA).toBeDefined();
+    expect(result.championPassiveAA!.preMitigation).toBe(24);
+    expect(result.championPassiveAA!.postMitigation).toBe(24); // armor 0
+  });
+
+  it('パッシブAA: アーマー60に対して軽減される', () => {
+    const def: Champion = {
+      species: species([], 60, 0),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const atk: Champion = {
+      species: aatroxSpecies(),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const result = calculateDamage(atk, def);
+    // preMit = 4% * 600 = 24, effArmor = 60, postMit = 24 * 100/160 = 15
+    expect(result.championPassiveAA!.postMitigation).toBe(Math.round(24 * 100 / 160));
+  });
+
+  it('Q スイートスポットバリアント: 基本ダメージの1.7倍が返る', () => {
+    const def: Champion = {
+      species: species([], 0, 0),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const atk: Champion = {
+      species: aatroxSpecies(),
+      level: 18,
+      items: [],
+      skillAllocation: { q: 5, w: 0, e: 0, r: 3 },
+    };
+    const result = calculateDamage(atk, def);
+    const q = result.skills[0];
+    expect(q.variants).toHaveLength(1);
+    expect(q.variants![0].name).toBe('スイートスポット');
+    expect(q.variants![0].preMitigation).toBe(Math.round(q.preMitigation * 1.7));
+  });
+
+  it('Rランク0のとき stateResults が空', () => {
+    const atk: Champion = {
+      species: aatroxSpecies(),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 1, w: 0, e: 0, r: 0 },
+    };
+    const def: Champion = {
+      species: species([], 60, 0),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const result = calculateDamage(atk, def);
+    expect(result.stateResults).toBeUndefined();
+  });
+
+  it('R発動中: bonusAd が基礎ADの20%増加し totalAd が増える（ランク1）', () => {
+    const atk: Champion = {
+      species: aatroxSpecies(),
+      level: 6,
+      items: [],
+      skillAllocation: { q: 1, w: 1, e: 1, r: 1 },
+    };
+    const def: Champion = {
+      species: species([], 0, 0),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const baseResult = calculateDamage(atk, def);
+    const stateResult = baseResult.stateResults?.[0];
+    expect(stateResult).toBeDefined();
+    expect(stateResult!.stateName).toBe('R (World Ender)');
+    expect(stateResult!.rank).toBe(1);
+    // baseAd = 60 (no items, no growth), bonusBoost = 60 * 20% = 12
+    // R state totalAd = 60 + 12 = 72
+    expect(stateResult!.autoAttack.preMitigation).toBe(72);
+  });
+});

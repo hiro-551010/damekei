@@ -47,6 +47,8 @@ Meraki Analytics から取得した種族データ。リポジトリから取得
 | `baseStats` | `ChampionBaseStats` | レベル1時の基礎ステータス |
 | `statGrowth` | `ChampionStatGrowth` | レベルアップごとの成長値 |
 | `skills` | `SkillDamageSpec[]` | Q/W/E/R のダメージ係数一覧 |
+| `passiveSpec` | `ChampionPassiveSpec \| undefined` | チャンピオン固有パッシブ（LoL Wiki 手動収集）|
+| `stateModifiers` | `ChampionStateModifier[] \| undefined` | ステート変化（R 発動など）の定義 |
 
 ### Level
 
@@ -155,10 +157,47 @@ Meraki Analytics から取得したスキルのダメージ係数。多段ヒッ
 | `totalAdRatioByRank` | `number[]` | ランク別・総AD スケーリング係数 |
 | `bonusAdRatioByRank` | `number[]` | ランク別・ボーナスAD スケーリング係数 |
 | `apRatioByRank` | `number[]` | ランク別・AP スケーリング係数 |
+| `variants` | `SkillVariantSpec[] \| undefined` | スキル内バリアント（スイートスポット等）|
 
 > ランク別配列の例: `bonusAdRatioByRank: [1.20, 1.45, 1.70, 1.95, 2.20]` = ランク1で120%、ランク5で220%。
 > 固定値のスキルは全要素が同じ値の配列になる（例: `[0.4, 0.4, 0.4, 0.4, 0.4]`）。
 > Meraki に "Total" / "Maximum" 属性がある場合はそれを優先し、ない場合は1ヒット分の値をそのまま使う。
+
+### SkillVariantSpec
+
+スキル内の当たり判定バリアント（例：スイートスポット）。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `name` | `string` | バリアント名（例: `"スイートスポット"`） |
+| `multiplier` | `number` | ダメージへの乗数（例: `1.7` = +70%） |
+
+### ChampionPassiveSpec
+
+チャンピオン固有パッシブのダメージ定義。
+
+```typescript
+type ChampionPassiveSpec =
+  | { kind: "onHitMaxHpPercent"; percentByLevel: number[]; damageType: DamageType }
+```
+
+> `percentByLevel` の数値は LoL Wiki から取得し `champion-passives.json` に収録する。
+> `champion-repository` がロード時にマージする（`item-passives.json` と同じ運用）。
+
+### ChampionStateModifier
+
+アビリティ発動によるステータス変化の定義。
+
+```typescript
+type ChampionStateModifier = {
+  kind: "bonusAdFromBaseAd";
+  name: string;
+  triggerSlot: SkillSlot;
+  percentByRank: number[];
+};
+```
+
+> `triggerSlot` のスキルランクが 0（未習得）の場合は、対応するステート結果を非表示にする。
 
 ### DamageType
 
@@ -268,3 +307,74 @@ type SkillDamageResult = {
 > オートアタック: preMitigation = totalAd（物理ダメージ）。クリティカルは totalAd × 1.75。
 > critPostMitigation は攻撃側の critChance が 0 のとき null とし、表示側でハイフンを出す。
 > onHitPhysicalPostMitigation は物理オンヒット（BotRK・Kraken Slayer・Spellblade）の合算。計算機は満HP・Kraken3回目・スペルブレード常時発動を前提とする。
+
+### SkillVariantResult
+
+スキルバリアント（スイートスポット等）の計算結果。
+
+```typescript
+type SkillVariantResult = {
+  name: string;
+  preMitigation: number;
+  effectiveResistance: number;
+  postMitigation: number;
+  reductionPercent: number;
+  hpPercent: number;
+};
+```
+
+### ChampionPassiveAAResult
+
+チャンピオン固有パッシブ発動時の追加ダメージ。
+
+```typescript
+type ChampionPassiveAAResult = {
+  damageType: DamageType;
+  preMitigation: number;
+  effectiveResistance: number;
+  postMitigation: number;
+  reductionPercent: number;
+  hpPercent: number;
+};
+```
+
+### ChampionStateResult
+
+ステート変化（R 発動等）適用後の全スキル・AA 計算結果。
+
+```typescript
+type ChampionStateResult = {
+  stateName: string;
+  rank: number;
+  autoAttack: AutoAttackResult;
+  skills: SkillDamageResult[];
+  championPassiveAA?: ChampionPassiveAAResult;
+};
+```
+
+`DamageResult` は以下フィールドを追加する。
+
+```typescript
+type DamageResult = {
+  autoAttack: AutoAttackResult;
+  skills: SkillDamageResult[];
+  championPassiveAA?: ChampionPassiveAAResult;  // チャンピオン固有パッシブ AA（例: Aatrox）
+  stateResults?: ChampionStateResult[];          // R 発動中など（triggerSlot rank > 0 のみ）
+};
+```
+
+`SkillDamageResult` は `variants` フィールドを追加する。
+
+```typescript
+type SkillDamageResult = {
+  slot: SkillSlot;
+  name: string;
+  damageType: DamageType;
+  preMitigation: number;
+  effectiveResistance: number;
+  postMitigation: number;
+  reductionPercent: number;
+  hpPercent: number;
+  variants?: SkillVariantResult[];  // スイートスポット等
+};
+```

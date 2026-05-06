@@ -1,4 +1,7 @@
-import { AutoAttackResult, Champion, ComputedStats, DamageResult, SkillDamageResult } from "../models";
+import {
+  AutoAttackResult, Champion, ChampionPassiveAAResult, ChampionStateResult,
+  ComputedStats, DamageResult, SkillDamageResult, SkillVariantResult,
+} from "../models";
 import { computeStats } from "./stats-computer";
 import { SkillSlot } from "../types";
 
@@ -66,7 +69,6 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
     ? Math.round((onHitMagicPostMitigation / defStats.hp) * 1000) / 10
     : null;
 
-  // Physical on-hit (nthHitPhysical / onHitPhysicalCurrentHpPercent / spellblade)
   let onHitPhysicalPreMitigation = 0;
   const baseAd = atkStats.totalAd - atkStats.bonusAd;
   for (const p of attacker.items.flatMap((i) => i.passives)) {
@@ -100,11 +102,12 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
   };
 }
 
-export function calculateDamage(attacker: Champion, defender: Champion): DamageResult {
-  const atkStats = computeStats(attacker);
-  const defStats = computeStats(defender);
-
-  const skills: SkillDamageResult[] = attacker.species.skills.map((spec) => {
+function calculateSkills(
+  attacker: Champion,
+  atkStats: ComputedStats,
+  defStats: ComputedStats,
+): SkillDamageResult[] {
+  return attacker.species.skills.map((spec) => {
     const rank = skillRank(spec.slot, attacker.skillAllocation);
 
     if (rank === 0) {
@@ -149,6 +152,21 @@ export function calculateDamage(attacker: Champion, defender: Champion): DamageR
       ? (postMitigation / defStats.hp) * 100
       : 0;
 
+    const variants: SkillVariantResult[] = (spec.variants ?? []).map((v) => {
+      const vPreMit = preMitigation * v.multiplier;
+      const vPostMit = spec.damageType === "true" ? vPreMit : mitigate(vPreMit, effectiveResistance);
+      const vReduction = vPreMit > 0 ? ((vPreMit - vPostMit) / vPreMit) * 100 : 0;
+      const vHp = defStats.hp > 0 ? (vPostMit / defStats.hp) * 100 : 0;
+      return {
+        name: v.name,
+        preMitigation: Math.round(vPreMit),
+        effectiveResistance: Math.round(effectiveResistance * 10) / 10,
+        postMitigation: Math.round(vPostMit),
+        reductionPercent: Math.round(vReduction * 10) / 10,
+        hpPercent: Math.round(vHp * 10) / 10,
+      };
+    });
+
     return {
       slot: spec.slot,
       name: spec.name,
@@ -158,8 +176,89 @@ export function calculateDamage(attacker: Champion, defender: Champion): DamageR
       postMitigation: Math.round(postMitigation),
       reductionPercent: Math.round(reductionPercent * 10) / 10,
       hpPercent: Math.round(hpPercent * 10) / 10,
+      ...(variants.length > 0 && { variants }),
     };
   });
+}
 
-  return { autoAttack: calculateAutoAttack(attacker, atkStats, defStats), skills };
+function calculateChampionPassiveAA(
+  attacker: Champion,
+  atkStats: ComputedStats,
+  defStats: ComputedStats,
+): ChampionPassiveAAResult | undefined {
+  const spec = attacker.species.passiveSpec;
+  if (!spec) return undefined;
+
+  if (spec.kind === "onHitMaxHpPercent") {
+    const levelIndex = Math.min(attacker.level - 1, spec.percentByLevel.length - 1);
+    const percent = spec.percentByLevel[levelIndex];
+    const preMit = (percent / 100) * defStats.hp;
+
+    let effRes: number;
+    if (spec.damageType === "physical") {
+      effRes = effectiveArmor(defStats.armor, atkStats);
+    } else if (spec.damageType === "magic") {
+      effRes = effectiveMagicResist(defStats.magicResist, atkStats);
+    } else {
+      effRes = 0;
+    }
+
+    const postMit = spec.damageType === "true" ? preMit : mitigate(preMit, effRes);
+    const reductionPct = preMit > 0 ? ((preMit - postMit) / preMit) * 100 : 0;
+    const hpPct = defStats.hp > 0 ? (postMit / defStats.hp) * 100 : 0;
+
+    return {
+      damageType: spec.damageType,
+      preMitigation: Math.round(preMit),
+      effectiveResistance: Math.round(effRes * 10) / 10,
+      postMitigation: Math.round(postMit),
+      reductionPercent: Math.round(reductionPct * 10) / 10,
+      hpPercent: Math.round(hpPct * 10) / 10,
+    };
+  }
+}
+
+function applyStateModifier(stats: ComputedStats, modifier: NonNullable<Champion["species"]["stateModifiers"]>[0], rank: number): ComputedStats {
+  if (modifier.kind === "bonusAdFromBaseAd") {
+    const baseAd = stats.totalAd - stats.bonusAd;
+    const additionalBonusAd = baseAd * modifier.percentByRank[rank - 1] / 100;
+    return {
+      ...stats,
+      bonusAd: stats.bonusAd + additionalBonusAd,
+      totalAd: stats.totalAd + additionalBonusAd,
+    };
+  }
+  return stats;
+}
+
+export function calculateDamage(attacker: Champion, defender: Champion): DamageResult {
+  const atkStats = computeStats(attacker);
+  const defStats = computeStats(defender);
+
+  const autoAttack = calculateAutoAttack(attacker, atkStats, defStats);
+  const skills = calculateSkills(attacker, atkStats, defStats);
+  const championPassiveAA = calculateChampionPassiveAA(attacker, atkStats, defStats);
+
+  const stateResults: ChampionStateResult[] = [];
+  for (const modifier of attacker.species.stateModifiers ?? []) {
+    const slotKey = modifier.triggerSlot.toLowerCase() as "q" | "w" | "e" | "r";
+    const rank = attacker.skillAllocation[slotKey];
+    if (rank === 0) continue;
+
+    const modifiedAtkStats = applyStateModifier(atkStats, modifier, rank);
+    stateResults.push({
+      stateName: modifier.name,
+      rank,
+      autoAttack: calculateAutoAttack(attacker, modifiedAtkStats, defStats),
+      skills: calculateSkills(attacker, modifiedAtkStats, defStats),
+      ...(championPassiveAA && { championPassiveAA }),
+    });
+  }
+
+  return {
+    autoAttack,
+    skills,
+    ...(championPassiveAA && { championPassiveAA }),
+    ...(stateResults.length > 0 && { stateResults }),
+  };
 }

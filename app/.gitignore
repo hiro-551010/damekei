@@ -44,6 +44,7 @@ next-env.d.ts
 src/contexts/games/pokemon/damage-calc/infrastructure/data/*.json
 src/contexts/games/lol/damage-calc/infrastructure/data/*.json
 !src/contexts/games/lol/damage-calc/infrastructure/data/item-passives.json
+!src/contexts/games/lol/damage-calc/infrastructure/data/champion-passives.json
 
 # E2E
 /playwright-output/

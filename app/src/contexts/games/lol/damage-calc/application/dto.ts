@@ -66,6 +66,15 @@ export type DefenderInputDto = {
   itemIds: number[];
 };
 
+export type SkillVariantResultDto = {
+  name: string;
+  preMitigation: number;
+  effectiveResistance: number;
+  postMitigation: number;
+  reductionPercent: number;
+  hpPercent: number;
+};
+
 export type SkillDamageResultDto = {
   slot: SkillSlot;
   name: string;
@@ -75,6 +84,7 @@ export type SkillDamageResultDto = {
   postMitigation: number;
   reductionPercent: number;
   hpPercent: number;
+  variants?: SkillVariantResultDto[];
 };
 
 export type AutoAttackResultDto = {
@@ -91,7 +101,26 @@ export type AutoAttackResultDto = {
   onHitPhysicalHpPercent: number | null;
 };
 
+export type ChampionPassiveAAResultDto = {
+  damageType: DamageType;
+  preMitigation: number;
+  effectiveResistance: number;
+  postMitigation: number;
+  reductionPercent: number;
+  hpPercent: number;
+};
+
+export type ChampionStateResultDto = {
+  stateName: string;
+  rank: number;
+  autoAttack: AutoAttackResultDto;
+  skills: SkillDamageResultDto[];
+  championPassiveAA?: ChampionPassiveAAResultDto;
+};
+
 export type CalculateDamageResultDto = {
   autoAttack: AutoAttackResultDto;
   skills: SkillDamageResultDto[];
+  championPassiveAA?: ChampionPassiveAAResultDto;
+  stateResults?: ChampionStateResultDto[];
 };

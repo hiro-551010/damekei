@@ -101,7 +101,12 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
         {results === null ? (
           <div className="text-sm text-foreground text-center py-4">チャンピオンを選択してください</div>
         ) : (
-          <DamageResultTable autoAttack={results.autoAttack} skills={results.skills} />
+          <DamageResultTable
+            autoAttack={results.autoAttack}
+            skills={results.skills}
+            championPassiveAA={results.championPassiveAA}
+            stateResults={results.stateResults}
+          />
         )}
       </div>
     </div>

@@ -21,8 +21,10 @@ JSON は git 管理外（`.gitignore`）。`scripts/fetch-lol-data.ts` で生成
 
 ```
 app/src/contexts/games/lol/damage-calc/infrastructure/data/
-  champions.json    # 全チャンピオンの基礎ステータス・成長値・スキル係数
-  items.json        # 全アイテムのステータス・パッシブ効果
+  champions.json          # 全チャンピオンの基礎ステータス・成長値・スキル係数（gitignore）
+  items.json              # 全アイテムのステータス・パッシブ効果（gitignore）
+  item-passives.json      # アイテムパッシブ手動収集データ（git管理）
+  champion-passives.json  # チャンピオン固有パッシブ手動収集データ（git管理）
 ```
 
 ---
@@ -167,6 +169,45 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
 | `nameEn` | `string` | 英語名 |
 | `stats` | `object` | 付与ステータス（該当なしは `null`） |
 | `passives` | `object[]` | ダメージ計算に影響するパッシブ（`domain/model.md` の `ItemPassive` 参照） |
+
+---
+
+## champion-passives.json
+
+チャンピオン固有パッシブ・スキルバリアント・ステート変化の手動収集データ。git 管理。
+`item-passives.json` と同じ運用：`champions.json` はスクリプト生成で gitignore されており、
+`champion-repository` がロード時に `champion-passives.json` をマージする。
+
+```json
+{
+  "Aatrox": {
+    "passiveSpec": {
+      "kind": "onHitMaxHpPercent",
+      "percentByLevel": [4.0, 4.39, 4.79, 5.18, 5.58, 5.97, 6.37, 6.76, 7.16, 7.55, 7.95, 8.34, 8.74, 9.13, 9.53, 9.92, 10.32, 10.71],
+      "damageType": "physical"
+    },
+    "skillVariants": {
+      "Q": [{ "name": "スイートスポット", "multiplier": 1.7 }]
+    },
+    "stateModifiers": [
+      {
+        "kind": "bonusAdFromBaseAd",
+        "name": "R (World Ender)",
+        "triggerSlot": "R",
+        "percentByRank": [20, 30, 40]
+      }
+    ]
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `passiveSpec` | `object` | チャンピオン固有パッシブ（型は `domain/model.md` の `ChampionPassiveSpec` 参照） |
+| `skillVariants` | `object` | スロット → `SkillVariantSpec[]`。`champion-repository` がスキルにマージ |
+| `stateModifiers` | `object[]` | R 発動等のステート変化（型は `domain/model.md` の `ChampionStateModifier` 参照） |
+
+> `passiveSpec.percentByLevel` の数値の正本は LoL Wiki（`wiki.leagueoflegends.com`）。
 
 ---
 
