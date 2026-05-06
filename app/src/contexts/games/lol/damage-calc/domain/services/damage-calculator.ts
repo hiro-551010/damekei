@@ -34,8 +34,11 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
   const hasCrit = atkStats.critChance > 0;
   const bonusCritFactor = attacker.items
     .flatMap((i) => i.passives)
-    .filter((p) => p.kind === "critDamageAmp" && atkStats.critChance >= p.minCritChance)
-    .reduce((sum, p) => sum + (p as { kind: "critDamageAmp"; bonusFactor: number; minCritChance: number }).bonusFactor, 0);
+    .reduce((sum, p) => {
+      if (p.kind !== "critDamageAmp") return sum;
+      if (atkStats.critChance < p.minCritChance) return sum;
+      return sum + p.bonusFactor;
+    }, 0);
   const critMultiplier = 1.75 + bonusCritFactor;
   const critPreMitigation = atkStats.totalAd * critMultiplier;
   const critPostMitigation = hasCrit ? mitigate(critPreMitigation, effArmor) : null;
