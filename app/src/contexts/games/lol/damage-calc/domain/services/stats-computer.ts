@@ -20,6 +20,7 @@ export function computeStats(champion: Champion): ComputedStats {
   let armorPenPercent = 0;
   let magicPenFlat = 0;
   let magicPenPercent = 0;
+  let critChance = 0;
 
   for (const item of items) {
     const s = item.stats;
@@ -32,6 +33,7 @@ export function computeStats(champion: Champion): ComputedStats {
     armorPenPercent += s.armorPenPercent ?? 0;
     magicPenFlat += s.magicPenFlat ?? 0;
     magicPenPercent += s.magicPenPercent ?? 0;
+    critChance += s.critChance ?? 0;
   }
 
   return {
@@ -45,5 +47,6 @@ export function computeStats(champion: Champion): ComputedStats {
     armorPenPercent,
     magicPenFlat,
     magicPenPercent,
+    critChance,
   };
 }

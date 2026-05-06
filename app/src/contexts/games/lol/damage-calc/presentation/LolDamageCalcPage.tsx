@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChampionSummaryDto, ItemDto, SkillAllocationDto, SkillDamageResultDto } from "../application/dto";
+import { CalculateDamageResultDto, ChampionSummaryDto, ItemDto, SkillAllocationDto } from "../application/dto";
 import { ChampionPanel } from "./components/ChampionPanel";
 import { DamageResultTable } from "./components/DamageResultTable";
 
@@ -16,7 +16,7 @@ type Props = {
     defenderChampionId: string,
     defenderLevel: number,
     defenderItemIds: number[]
-  ) => Promise<SkillDamageResultDto[]>;
+  ) => Promise<CalculateDamageResultDto>;
 };
 
 function defaultAllocation(): SkillAllocationDto {
@@ -33,7 +33,7 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
   const [defLevel, setDefLevel] = useState(1);
   const [defItems, setDefItems] = useState<number[]>([]);
 
-  const [results, setResults] = useState<SkillDamageResultDto[] | null>(null);
+  const [results, setResults] = useState<CalculateDamageResultDto | null>(null);
   // null = no champions selected; array = calculation result (may contain zero-damage skills)
   const [error, setError] = useState<string | null>(null);
 
@@ -101,7 +101,7 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
         {results === null ? (
           <div className="text-sm text-foreground text-center py-4">チャンピオンを選択してください</div>
         ) : (
-          <DamageResultTable skills={results} />
+          <DamageResultTable autoAttack={results.autoAttack} skills={results.skills} />
         )}
       </div>
     </div>

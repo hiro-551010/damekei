@@ -23,30 +23,38 @@ async function fetchJson(url: string): Promise<unknown> {
   return res.json();
 }
 
+type LevelingEntry = { attribute: string; modifiers: Array<{ values: number[]; units: string[] }> };
+
 function extractSkillDamage(ability: Record<string, unknown>) {
   let baseDamageByRank: number[] = [];
-  let totalAdRatio = 0;
-  let bonusAdRatio = 0;
-  let apRatio = 0;
+  let totalAdRatioByRank: number[] = [];
+  let bonusAdRatioByRank: number[] = [];
+  let apRatioByRank: number[] = [];
 
-  const effects = (ability.effects as Array<{ leveling?: Array<{ attribute: string; modifiers: Array<{ values: number[]; units: string[] }> }> }>) ?? [];
+  const effects = (ability.effects as Array<{ leveling?: LevelingEntry[] }>) ?? [];
+  const allLeveling = effects.flatMap((e) => e.leveling ?? []);
 
-  for (const effect of effects) {
-    for (const lv of effect.leveling ?? []) {
-      if (!lv.attribute.toLowerCase().includes("damage")) continue;
-      for (const mod of lv.modifiers) {
-        const unit = mod.units[0] ?? "";
-        if (unit === "") baseDamageByRank = mod.values;
-        else if (unit === "% AP") apRatio = mod.values[0] / 100;
-        else if (unit === "% AD") totalAdRatio = mod.values[0] / 100;
-        else if (unit.toLowerCase().includes("% bonus ad")) bonusAdRatio = mod.values[0] / 100;
-      }
-      break;
+  // "Total" / "Maximum" 属性を優先。なければ通常の damage 属性を使う
+  const priority = allLeveling.filter((lv) => {
+    const a = lv.attribute.toLowerCase();
+    return (a.includes("total") || a.includes("maximum")) && a.includes("damage");
+  });
+  const candidates = priority.length > 0 ? priority : allLeveling.filter((lv) =>
+    lv.attribute.toLowerCase().includes("damage")
+  );
+
+  for (const lv of candidates) {
+    for (const mod of lv.modifiers) {
+      const unit = mod.units[0] ?? "";
+      if (unit === "") baseDamageByRank = mod.values;
+      else if (unit === "% AP") apRatioByRank = mod.values.map((v) => v / 100);
+      else if (unit === "% AD") totalAdRatioByRank = mod.values.map((v) => v / 100);
+      else if (unit.toLowerCase().includes("% bonus ad")) bonusAdRatioByRank = mod.values.map((v) => v / 100);
     }
     if (baseDamageByRank.length > 0) break;
   }
 
-  return { baseDamageByRank, totalAdRatio, bonusAdRatio, apRatio };
+  return { baseDamageByRank, totalAdRatioByRank, bonusAdRatioByRank, apRatioByRank };
 }
 
 async function buildChampionData(key: string) {
@@ -58,15 +66,15 @@ async function buildChampionData(key: string) {
     const ab = abilities[slot]?.[0];
     if (!ab) return [];
     const damageType = mapDamageType(ab.damageType as string);
-    const { baseDamageByRank, totalAdRatio, bonusAdRatio, apRatio } = extractSkillDamage(ab);
+    const { baseDamageByRank, totalAdRatioByRank, bonusAdRatioByRank, apRatioByRank } = extractSkillDamage(ab);
     return [{
       slot,
       name: ab.name as string,
       damageType,
       baseDamageByRank,
-      totalAdRatio,
-      bonusAdRatio,
-      apRatio,
+      totalAdRatioByRank,
+      bonusAdRatioByRank,
+      apRatioByRank,
     }];
   });
 
@@ -132,7 +140,7 @@ async function fetchItems() {
           magicPenFlat: nullIfZero(s.magicPenetration?.flat ?? 0),
           magicPenPercent: nullIfZero(s.magicPenetration?.percent ?? 0),
           attackSpeed: nullIfZero(s.attackSpeed?.flat ?? 0),
-          critChance: nullIfZero(s.criticalStrikeChance?.flat ?? 0),
+          critChance: nullIfZero(s.criticalStrikeChance?.percent ?? 0),
           lifeSteal: nullIfZero(s.lifeSteal?.flat ?? 0),
           abilityHaste: nullIfZero(s.abilityHaste?.flat ?? 0),
         },

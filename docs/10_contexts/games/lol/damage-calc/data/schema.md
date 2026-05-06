@@ -56,36 +56,36 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
         "name": "オーブ・オブ・デセプション",
         "damageType": "magic",
         "baseDamageByRank": [40, 65, 90, 115, 140],
-        "totalAdRatio": 0,
-        "bonusAdRatio": 0,
-        "apRatio": 0.35
+        "totalAdRatioByRank": [0, 0, 0, 0, 0],
+        "bonusAdRatioByRank": [0, 0, 0, 0, 0],
+        "apRatioByRank": [0.35, 0.35, 0.35, 0.35, 0.35]
       },
       {
         "slot": "W",
         "name": "フォックスファイア",
         "damageType": "magic",
         "baseDamageByRank": [60, 90, 120, 150, 180],
-        "totalAdRatio": 0,
-        "bonusAdRatio": 0,
-        "apRatio": 0.4
+        "totalAdRatioByRank": [0, 0, 0, 0, 0],
+        "bonusAdRatioByRank": [0, 0, 0, 0, 0],
+        "apRatioByRank": [0.4, 0.4, 0.4, 0.4, 0.4]
       },
       {
         "slot": "E",
         "name": "チャーム",
         "damageType": "magic",
         "baseDamageByRank": [60, 90, 120, 150, 180],
-        "totalAdRatio": 0,
-        "bonusAdRatio": 0,
-        "apRatio": 0.5
+        "totalAdRatioByRank": [0, 0, 0, 0, 0],
+        "bonusAdRatioByRank": [0, 0, 0, 0, 0],
+        "apRatioByRank": [0.5, 0.5, 0.5, 0.5, 0.5]
       },
       {
         "slot": "R",
         "name": "スピリット・ラッシュ",
         "damageType": "magic",
         "baseDamageByRank": [200, 300, 400],
-        "totalAdRatio": 0,
-        "bonusAdRatio": 0,
-        "apRatio": 0.3
+        "totalAdRatioByRank": [0, 0, 0],
+        "bonusAdRatioByRank": [0, 0, 0],
+        "apRatioByRank": [0.3, 0.3, 0.3]
       }
     ]
   }
@@ -100,10 +100,10 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
 | `baseStats` | `object` | レベル1時の基礎ステータス |
 | `statGrowth` | `object` | レベルアップごとの成長値 |
 | `skills` | `object[]` | Q/W/E/R のダメージ係数（スコープ外スキルは含まない） |
-| `skills[].baseDamageByRank` | `number[]` | ランク1〜5（Rは1〜3）の基礎ダメージ |
-| `skills[].totalAdRatio` | `number` | 総AD に対する係数（0 = スケールなし） |
-| `skills[].bonusAdRatio` | `number` | ボーナスAD に対する係数 |
-| `skills[].apRatio` | `number` | AP に対する係数 |
+| `skills[].baseDamageByRank` | `number[]` | ランク1〜5（Rは1〜3）の基礎ダメージ合計 |
+| `skills[].totalAdRatioByRank` | `number[]` | ランク別・総AD スケーリング係数 |
+| `skills[].bonusAdRatioByRank` | `number[]` | ランク別・ボーナスAD スケーリング係数 |
+| `skills[].apRatioByRank` | `number[]` | ランク別・AP スケーリング係数 |
 
 ---
 

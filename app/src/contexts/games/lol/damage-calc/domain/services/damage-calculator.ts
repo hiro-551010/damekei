@@ -1,4 +1,4 @@
-import { Champion, ComputedStats, DamageResult, SkillDamageResult } from "../models";
+import { AutoAttackResult, Champion, ComputedStats, DamageResult, SkillDamageResult } from "../models";
 import { computeStats } from "./stats-computer";
 import { SkillSlot } from "../types";
 
@@ -20,6 +20,33 @@ function mitigate(preMitigation: number, resistance: number): number {
 
 function skillRank(slot: SkillSlot, alloc: Champion["skillAllocation"]): number {
   return alloc[slot.toLowerCase() as "q" | "w" | "e" | "r"];
+}
+
+function calculateAutoAttack(atkStats: ComputedStats, defStats: ComputedStats): AutoAttackResult {
+  const effArmor = effectiveArmor(defStats.armor, atkStats);
+  const preMitigation = atkStats.totalAd;
+  const postMitigation = mitigate(preMitigation, effArmor);
+  const reductionPercent = preMitigation > 0
+    ? ((preMitigation - postMitigation) / preMitigation) * 100
+    : 0;
+  const hpPercent = defStats.hp > 0 ? (postMitigation / defStats.hp) * 100 : 0;
+
+  const hasCrit = atkStats.critChance > 0;
+  const critPreMitigation = atkStats.totalAd * 1.75;
+  const critPostMitigation = hasCrit ? mitigate(critPreMitigation, effArmor) : null;
+  const critHpPercent = hasCrit && defStats.hp > 0
+    ? (critPostMitigation! / defStats.hp) * 100
+    : null;
+
+  return {
+    preMitigation: Math.round(preMitigation),
+    effectiveResistance: Math.round(effArmor * 10) / 10,
+    postMitigation: Math.round(postMitigation),
+    reductionPercent: Math.round(reductionPercent * 10) / 10,
+    hpPercent: Math.round(hpPercent * 10) / 10,
+    critPostMitigation: critPostMitigation !== null ? Math.round(critPostMitigation) : null,
+    critHpPercent: critHpPercent !== null ? Math.round(critHpPercent * 10) / 10 : null,
+  };
 }
 
 export function calculateDamage(attacker: Champion, defender: Champion): DamageResult {
@@ -46,9 +73,9 @@ export function calculateDamage(attacker: Champion, defender: Champion): DamageR
     const baseDmg = spec.baseDamageByRank[rankIndex] ?? 0;
     const preMitigation =
       baseDmg +
-      spec.totalAdRatio * atkStats.totalAd +
-      spec.bonusAdRatio * atkStats.bonusAd +
-      spec.apRatio * atkStats.ap;
+      (spec.totalAdRatioByRank[rankIndex] ?? 0) * atkStats.totalAd +
+      (spec.bonusAdRatioByRank[rankIndex] ?? 0) * atkStats.bonusAd +
+      (spec.apRatioByRank[rankIndex] ?? 0) * atkStats.ap;
 
     let effectiveResistance: number;
     if (spec.damageType === "physical") {
@@ -83,5 +110,5 @@ export function calculateDamage(attacker: Champion, defender: Champion): DamageR
     };
   });
 
-  return { skills };
+  return { autoAttack: calculateAutoAttack(atkStats, defStats), skills };
 }

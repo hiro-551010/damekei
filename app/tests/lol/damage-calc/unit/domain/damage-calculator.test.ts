@@ -20,14 +20,15 @@ function skill(
   damageType: "physical" | "magic" | "true",
   baseDamageByRank: number[]
 ): SkillDamageSpec {
+  const len = baseDamageByRank.length || 1;
   return {
     slot,
     name: `${slot} Skill`,
     damageType,
     baseDamageByRank,
-    totalAdRatio: 0,
-    bonusAdRatio: 0,
-    apRatio: 0,
+    totalAdRatioByRank: Array(len).fill(0),
+    bonusAdRatioByRank: Array(len).fill(0),
+    apRatioByRank: Array(len).fill(0),
   };
 }
 

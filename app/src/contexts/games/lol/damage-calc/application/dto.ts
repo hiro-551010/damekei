@@ -11,9 +11,9 @@ export type SkillDamageSpecDto = {
   name: string;
   damageType: DamageType;
   baseDamageByRank: number[];
-  totalAdRatio: number;
-  bonusAdRatio: number;
-  apRatio: number;
+  totalAdRatioByRank: number[];
+  bonusAdRatioByRank: number[];
+  apRatioByRank: number[];
 };
 
 export type ChampionDetailDto = {
@@ -77,6 +77,17 @@ export type SkillDamageResultDto = {
   hpPercent: number;
 };
 
+export type AutoAttackResultDto = {
+  preMitigation: number;
+  effectiveResistance: number;
+  postMitigation: number;
+  reductionPercent: number;
+  hpPercent: number;
+  critPostMitigation: number | null;
+  critHpPercent: number | null;
+};
+
 export type CalculateDamageResultDto = {
+  autoAttack: AutoAttackResultDto;
   skills: SkillDamageResultDto[];
 };

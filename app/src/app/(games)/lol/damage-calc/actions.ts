@@ -1,7 +1,7 @@
 "use server";
 
 import { lolDamageCalcUseCases } from "@/contexts/games/lol/damage-calc/infrastructure/container";
-import { SkillAllocationDto, SkillDamageResultDto } from "@/contexts/games/lol/damage-calc/application/dto";
+import { CalculateDamageResultDto, SkillAllocationDto } from "@/contexts/games/lol/damage-calc/application/dto";
 
 export async function calculateLolDamage(
   attackerChampionId: string,
@@ -11,10 +11,9 @@ export async function calculateLolDamage(
   defenderChampionId: string,
   defenderLevel: number,
   defenderItemIds: number[]
-): Promise<SkillDamageResultDto[]> {
-  const result = await lolDamageCalcUseCases.calculateDamage(
+): Promise<CalculateDamageResultDto> {
+  return lolDamageCalcUseCases.calculateDamage(
     { championId: attackerChampionId, level: attackerLevel, itemIds: attackerItemIds, skillAllocation },
     { championId: defenderChampionId, level: defenderLevel, itemIds: defenderItemIds }
   );
-  return result.skills;
 }

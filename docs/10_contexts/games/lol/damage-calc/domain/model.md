@@ -113,19 +113,21 @@ type ItemPassive =
 
 ### SkillDamageSpec
 
-Meraki Analytics から取得したスキルのダメージ係数。
+Meraki Analytics から取得したスキルのダメージ係数。多段ヒットは Meraki の "Total" / "Maximum" 属性を使い合計値として格納する。
 
 | フィールド | 型 | 説明 |
 |---|---|---|
 | `slot` | `SkillSlot` | Q / W / E / R |
 | `name` | `string` | スキル名 |
 | `damageType` | `DamageType` | ダメージ種別 |
-| `baseDamageByRank` | `number[]` | ランク別基礎ダメージ（rank 1〜5、Rは1〜3） |
-| `totalAdRatio` | `number` | 総AD（基礎AD+ボーナスAD）に対するスケーリング係数 |
-| `bonusAdRatio` | `number` | ボーナスAD（アイテム等）のみに対するスケーリング係数 |
-| `apRatio` | `number` | AP に対するスケーリング係数 |
+| `baseDamageByRank` | `number[]` | ランク別基礎ダメージ合計（rank 1〜5、Rは1〜3） |
+| `totalAdRatioByRank` | `number[]` | ランク別・総AD スケーリング係数 |
+| `bonusAdRatioByRank` | `number[]` | ランク別・ボーナスAD スケーリング係数 |
+| `apRatioByRank` | `number[]` | ランク別・AP スケーリング係数 |
 
-> 係数の例: `totalAdRatio: 1.1` = 総AD × 110% がスキルダメージに加算される。
+> ランク別配列の例: `bonusAdRatioByRank: [1.20, 1.45, 1.70, 1.95, 2.20]` = ランク1で120%、ランク5で220%。
+> 固定値のスキルは全要素が同じ値の配列になる（例: `[0.4, 0.4, 0.4, 0.4, 0.4]`）。
+> Meraki に "Total" / "Maximum" 属性がある場合はそれを優先し、ない場合は1ヒット分の値をそのまま使う。
 
 ### DamageType
 
@@ -174,6 +176,7 @@ Meraki Analytics から取得したスキルのダメージ係数。
 | `armorPenPercent` | `number` | 総物理貫通%（0〜100） |
 | `magicPenFlat` | `number` | 総魔法貫通（固定値） |
 | `magicPenPercent` | `number` | 総魔法貫通%（0〜100） |
+| `critChance` | `number` | クリティカル率（%。0〜100。アイテム由来） |
 
 `ComputedStats` は `Champion` から導出されるため、domain サービス `StatsComputer` が計算する。
 
@@ -196,11 +199,22 @@ Meraki Analytics から取得したスキルのダメージ係数。
 
 ## DamageResult（ValueObject）
 
-Q/W/E/R 全スキルの計算結果をまとめたもの。
+Q/W/E/R 全スキルおよびオートアタックの計算結果をまとめたもの。
 
 ```typescript
 type DamageResult = {
+  autoAttack: AutoAttackResult;
   skills: SkillDamageResult[];  // Q/W/E/R 順（未習得スキルも含む）
+};
+
+type AutoAttackResult = {
+  preMitigation: number;
+  effectiveResistance: number;
+  postMitigation: number;
+  reductionPercent: number;
+  hpPercent: number;
+  critPostMitigation: number | null;  // null = 攻撃側にクリティカル率 0（クリティカルアイテムなし）
+  critHpPercent: number | null;
 };
 
 type SkillDamageResult = {
@@ -215,3 +229,6 @@ type SkillDamageResult = {
   hpPercent: number;               // 防御側HPに対するダメージ割合（%）= postMitigationDamage / defenderHp × 100
 };
 ```
+
+> オートアタック: preMitigation = totalAd（物理ダメージ）。クリティカルは totalAd × 1.75。
+> critPostMitigation は攻撃側の critChance が 0 のとき null とし、表示側でハイフンを出す。

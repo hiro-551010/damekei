@@ -1,8 +1,9 @@
 "use client";
 
-import { SkillDamageResultDto } from "../../application/dto";
+import { AutoAttackResultDto, SkillDamageResultDto } from "../../application/dto";
 
 type Props = {
+  autoAttack: AutoAttackResultDto;
   skills: SkillDamageResultDto[];
 };
 
@@ -12,7 +13,15 @@ const DAMAGE_TYPE_LABEL: Record<string, string> = {
   true: "真",
 };
 
-export function DamageResultTable({ skills }: Props) {
+function PhysicalBadge() {
+  return (
+    <span className="px-1.5 py-0.5 rounded text-xs font-semibold bg-orange-100 text-orange-700">
+      物理
+    </span>
+  );
+}
+
+export function DamageResultTable({ autoAttack, skills }: Props) {
   if (skills.length === 0) {
     return <div className="text-sm text-foreground text-center py-4">チャンピオンを選択してください</div>;
   }
@@ -32,6 +41,32 @@ export function DamageResultTable({ skills }: Props) {
           </tr>
         </thead>
         <tbody>
+          <tr className="border-b border-gray-100 hover:bg-gray-50">
+            <td className="py-2 px-3 font-bold">AA</td>
+            <td className="py-2 px-3"><PhysicalBadge /></td>
+            <td className="py-2 px-3 text-right tabular-nums">{autoAttack.preMitigation}</td>
+            <td className="py-2 px-3 text-right tabular-nums text-foreground">{autoAttack.effectiveResistance}</td>
+            <td className="py-2 px-3 text-right tabular-nums font-semibold">{autoAttack.postMitigation}</td>
+            <td className="py-2 px-3 text-right tabular-nums text-foreground">{autoAttack.reductionPercent}%</td>
+            <td className="py-2 px-3 text-right tabular-nums font-semibold text-blue-600">{autoAttack.hpPercent}%</td>
+          </tr>
+          <tr className="border-b border-gray-100 hover:bg-gray-50">
+            <td className="py-2 px-3 font-bold text-foreground">AA (クリット)</td>
+            <td className="py-2 px-3"><PhysicalBadge /></td>
+            <td className="py-2 px-3 text-right tabular-nums text-foreground">
+              {autoAttack.critPostMitigation !== null ? Math.round(autoAttack.preMitigation * 1.75) : "—"}
+            </td>
+            <td className="py-2 px-3 text-right tabular-nums text-foreground">{autoAttack.effectiveResistance}</td>
+            <td className="py-2 px-3 text-right tabular-nums font-semibold">
+              {autoAttack.critPostMitigation !== null ? autoAttack.critPostMitigation : "—"}
+            </td>
+            <td className="py-2 px-3 text-right tabular-nums text-foreground">
+              {autoAttack.critPostMitigation !== null ? `${autoAttack.reductionPercent}%` : "—"}
+            </td>
+            <td className="py-2 px-3 text-right tabular-nums font-semibold text-blue-600">
+              {autoAttack.critHpPercent !== null ? `${autoAttack.critHpPercent}%` : "—"}
+            </td>
+          </tr>
           {skills.map((s) => (
             <tr key={s.slot} className="border-b border-gray-100 hover:bg-gray-50">
               <td className="py-2 px-3">
