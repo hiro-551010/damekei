@@ -66,6 +66,7 @@ function item(overrides: Partial<Item["stats"]> = {}): Item {
       abilityHaste: null,
       ...overrides,
     },
+    passives: [],
   };
 }
 

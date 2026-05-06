@@ -68,7 +68,7 @@ Meraki Analytics から取得した種族データ。リポジトリから取得
 | `name` | `string` | 日本語名 |
 | `nameEn` | `string` | 英語名 |
 | `stats` | `ItemStats` | 付与ステータス |
-| `passives` | `ItemPassive[]` | ダメージに影響するパッシブ効果 |
+| `passives` | `ItemPassive[]` | ダメージ計算に影響するパッシブ効果（空配列可） |
 
 ### ItemStats
 
@@ -96,14 +96,21 @@ Meraki Analytics から取得した種族データ。リポジトリから取得
 
 ```typescript
 type ItemPassive =
-  | { kind: "armorPenPercent"; value: number }   // 例: Last Whisper系（30%物理貫通）
-  | { kind: "magicPenPercent"; value: number }   // 例: Void Staff（40%魔法貫通）
-  | { kind: "bonusAdToAp"; ratio: number }       // ボーナスADをAPに変換するパッシブ
-  | { kind: "other"; description: string }        // 計算対象外の複雑なパッシブ（表示のみ）
+  | { kind: "armorPenPercent"; value: number }              // 例: Last Whisper系（30%物理貫通）
+  | { kind: "magicPenPercent"; value: number }              // 例: Void Staff（45%魔法貫通）
+  | { kind: "critDamageAmp"; bonusFactor: number; minCritChance: number }
+    // クリットダメージ倍率の加算。critChance >= minCritChance のとき有効。
+    // 例: Infinity Edge → bonusFactor: 0.35, minCritChance: 60
+    //     通常 1.75 倍 → 1.75 + 0.35 = 2.10 倍
+  | { kind: "bonusAdToAp"; ratio: number }                  // ボーナスADをAPに変換するパッシブ
+  | { kind: "other"; description: string }                  // 計算対象外の複雑なパッシブ（表示のみ）
 ```
 
 > `armorPenPercent` / `magicPenPercent` は `ItemStats` にも存在するが、アイテムによっては
 > ステータスではなくパッシブとして実装されているため、両方を確認して合算する。
+
+> `critDamageAmp` は `damage-calculator` の auto attack 計算で適用する。
+> 複数アイテムが同種のパッシブを持つ場合は `bonusFactor` を合算する。
 
 ### SkillSlot
 

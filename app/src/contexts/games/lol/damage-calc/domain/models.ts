@@ -51,11 +51,19 @@ export type ItemStats = {
   abilityHaste: number | null;
 };
 
+export type ItemPassive =
+  | { kind: "armorPenPercent"; value: number }
+  | { kind: "magicPenPercent"; value: number }
+  | { kind: "critDamageAmp"; bonusFactor: number; minCritChance: number }
+  | { kind: "bonusAdToAp"; ratio: number }
+  | { kind: "other"; description: string };
+
 export type Item = {
   id: number;
   name: string;
   nameEn: string;
   stats: ItemStats;
+  passives: ItemPassive[];
 };
 
 export type SkillAllocation = {

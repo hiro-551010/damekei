@@ -22,7 +22,7 @@ function skillRank(slot: SkillSlot, alloc: Champion["skillAllocation"]): number 
   return alloc[slot.toLowerCase() as "q" | "w" | "e" | "r"];
 }
 
-function calculateAutoAttack(atkStats: ComputedStats, defStats: ComputedStats): AutoAttackResult {
+function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defStats: ComputedStats): AutoAttackResult {
   const effArmor = effectiveArmor(defStats.armor, atkStats);
   const preMitigation = atkStats.totalAd;
   const postMitigation = mitigate(preMitigation, effArmor);
@@ -32,7 +32,12 @@ function calculateAutoAttack(atkStats: ComputedStats, defStats: ComputedStats): 
   const hpPercent = defStats.hp > 0 ? (postMitigation / defStats.hp) * 100 : 0;
 
   const hasCrit = atkStats.critChance > 0;
-  const critPreMitigation = atkStats.totalAd * 1.75;
+  const bonusCritFactor = attacker.items
+    .flatMap((i) => i.passives)
+    .filter((p) => p.kind === "critDamageAmp" && atkStats.critChance >= p.minCritChance)
+    .reduce((sum, p) => sum + (p as { kind: "critDamageAmp"; bonusFactor: number; minCritChance: number }).bonusFactor, 0);
+  const critMultiplier = 1.75 + bonusCritFactor;
+  const critPreMitigation = atkStats.totalAd * critMultiplier;
   const critPostMitigation = hasCrit ? mitigate(critPreMitigation, effArmor) : null;
   const critHpPercent = hasCrit && defStats.hp > 0
     ? (critPostMitigation! / defStats.hp) * 100
@@ -110,5 +115,5 @@ export function calculateDamage(attacker: Champion, defender: Champion): DamageR
     };
   });
 
-  return { autoAttack: calculateAutoAttack(atkStats, defStats), skills };
+  return { autoAttack: calculateAutoAttack(attacker, atkStats, defStats), skills };
 }

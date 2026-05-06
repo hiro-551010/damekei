@@ -4,6 +4,7 @@ import type {
   Champion,
   ChampionSpecies,
   Item,
+  ItemPassive,
   SkillAllocation,
   SkillDamageSpec,
 } from "@/contexts/games/lol/damage-calc/domain/models";
@@ -54,7 +55,7 @@ function species(skills: SkillDamageSpec[], armor = BASE_ARMOR, magicResist = BA
   };
 }
 
-function item(overrides: Partial<Item["stats"]> = {}): Item {
+function item(overrides: Partial<Item["stats"]> = {}, passives: ItemPassive[] = []): Item {
   return {
     id: 2001,
     name: "テストアイテム",
@@ -75,6 +76,7 @@ function item(overrides: Partial<Item["stats"]> = {}): Item {
       abilityHaste: null,
       ...overrides,
     },
+    passives,
   };
 }
 
@@ -250,5 +252,44 @@ describe("calculateDamage", () => {
 
     expect(result.skills).toHaveLength(4);
     expect(result.skills.map((skillResult) => skillResult.slot)).toEqual(["Q", "W", "E", "R"]);
+  });
+
+  it("Infinity Edge（critChance: 60%）装備時、クリットダメージが totalAd × 2.10 になる", () => {
+    const ie = item(
+      { critChance: 60 },
+      [{ kind: "critDamageAmp", bonusFactor: 0.35, minCritChance: 60 }]
+    );
+    const result = calculateDamage(
+      attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [ie]),
+      defender(0, 0)
+    );
+
+    const totalAd = BASE_AD;
+    expect(result.autoAttack.critPostMitigation).toBe(Math.round(totalAd * 2.10));
+  });
+
+  it("critChance: 50%（閾値未満）のとき、IE があっても 1.75 倍のまま", () => {
+    const ie = item(
+      { critChance: 50 },
+      [{ kind: "critDamageAmp", bonusFactor: 0.35, minCritChance: 60 }]
+    );
+    const result = calculateDamage(
+      attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [ie]),
+      defender(0, 0)
+    );
+
+    const totalAd = BASE_AD;
+    expect(result.autoAttack.critPostMitigation).toBe(Math.round(totalAd * 1.75));
+  });
+
+  it("IE なし・critChance: 60% のとき、1.75 倍のまま", () => {
+    const critItem = item({ critChance: 60 });
+    const result = calculateDamage(
+      attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [critItem]),
+      defender(0, 0)
+    );
+
+    const totalAd = BASE_AD;
+    expect(result.autoAttack.critPostMitigation).toBe(Math.round(totalAd * 1.75));
   });
 });
