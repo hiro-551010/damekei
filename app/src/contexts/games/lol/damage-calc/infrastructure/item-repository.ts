@@ -1,8 +1,13 @@
 import { ItemRepository } from "../domain/ports";
-import { Item } from "../domain/models";
+import { Item, ItemPassive } from "../domain/models";
 import itemsData from "./data/items.json";
+import itemPassivesData from "./data/item-passives.json";
 
-const items = itemsData as Item[];
+const passivesMap = itemPassivesData as Record<string, ItemPassive[]>;
+const items: Item[] = (itemsData as Omit<Item, "passives">[]).map((item) => ({
+  ...item,
+  passives: passivesMap[String(item.id)] ?? [],
+}));
 const byId = new Map(items.map((i) => [i.id, i]));
 
 export const itemRepository: ItemRepository = {

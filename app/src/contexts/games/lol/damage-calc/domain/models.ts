@@ -57,6 +57,11 @@ export type ItemPassive =
   | { kind: "critDamageAmp"; bonusFactor: number; minCritChance: number }
   | { kind: "bonusAdToAp"; ratio: number }
   | { kind: "onHitMagicDamage"; damage: number }
+  | { kind: "onHitMagicDamageScaled"; base: number; apRatio: number }
+  | { kind: "apAmp"; ratio: number }
+  | { kind: "onHitPhysicalCurrentHpPercent"; percent: number }
+  | { kind: "nthHitPhysical"; hitCount: number; minDamage: number; maxDamage: number }
+  | { kind: "spellblade"; baseAdRatio: number }
   | { kind: "other"; description: string };
 
 export type Item = {

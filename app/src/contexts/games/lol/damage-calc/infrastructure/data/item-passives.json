@@ -1,0 +1,26 @@
+{
+  "3031": [
+    { "kind": "critDamageAmp", "bonusFactor": 0.35, "minCritChance": 40 }
+  ],
+  "3087": [
+    { "kind": "onHitMagicDamage", "damage": 60 }
+  ],
+  "3089": [
+    { "kind": "apAmp", "ratio": 0.30 }
+  ],
+  "6672": [
+    { "kind": "nthHitPhysical", "hitCount": 3, "minDamage": 150, "maxDamage": 210 }
+  ],
+  "3153": [
+    { "kind": "onHitPhysicalCurrentHpPercent", "percent": 9 }
+  ],
+  "3115": [
+    { "kind": "onHitMagicDamageScaled", "base": 15, "apRatio": 0.15 }
+  ],
+  "3091": [
+    { "kind": "onHitMagicDamage", "damage": 45 }
+  ],
+  "3078": [
+    { "kind": "spellblade", "baseAdRatio": 2.0 }
+  ]
+}

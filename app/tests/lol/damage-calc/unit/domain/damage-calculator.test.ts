@@ -257,7 +257,7 @@ describe("calculateDamage", () => {
   it("Infinity Edge（critChance: 60%）装備時、クリットダメージが totalAd × 2.10 になる", () => {
     const ie = item(
       { critChance: 60 },
-      [{ kind: "critDamageAmp", bonusFactor: 0.35, minCritChance: 60 }]
+      [{ kind: "critDamageAmp", bonusFactor: 0.35, minCritChance: 40 }]
     );
     const result = calculateDamage(
       attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [ie]),

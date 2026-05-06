@@ -96,27 +96,45 @@ Meraki Analytics から取得した種族データ。リポジトリから取得
 
 ```typescript
 type ItemPassive =
-  | { kind: "armorPenPercent"; value: number }              // 例: Last Whisper系（30%物理貫通）
-  | { kind: "magicPenPercent"; value: number }              // 例: Void Staff（45%魔法貫通）
+  | { kind: "armorPenPercent"; value: number }
+    // 例: Last Whisper系（物理貫通%）。ItemStats にない場合のみ使用
+  | { kind: "magicPenPercent"; value: number }
+    // 例: Void Staff（魔法貫通%）。ItemStats にない場合のみ使用
   | { kind: "critDamageAmp"; bonusFactor: number; minCritChance: number }
     // クリットダメージ倍率の加算。critChance >= minCritChance のとき有効。
-    // 例: Infinity Edge → bonusFactor: 0.35, minCritChance: 60
+    // 例: Infinity Edge → bonusFactor: 0.35, minCritChance: 40
     //     通常 1.75 倍 → 1.75 + 0.35 = 2.10 倍
   | { kind: "onHitMagicDamage"; damage: number }
-    // AA ヒット時に付与される魔法ダメージ（常時発動前提で計算）。
-    // 例: Statikk Shiv → damage: 80
-    // 攻撃側の magicPenFlat / magicPenPercent を適用し、防御側 MR で軽減する。
-  | { kind: "bonusAdToAp"; ratio: number }                  // ボーナスADをAPに変換するパッシブ
-  | { kind: "other"; description: string }                  // 計算対象外の複雑なパッシブ（表示のみ）
+    // AA ヒット時のフラット魔法ダメージ（常時発動前提）。
+    // 例: Statikk Shiv → damage: 60 / Wit's End → damage: 45
+    // 攻撃側の magicPenFlat / magicPenPercent を適用し、防御側 MR で軽減する
+  | { kind: "onHitMagicDamageScaled"; base: number; apRatio: number }
+    // フラット + AP比率のオンヒット魔法ダメージ（常時発動前提）。
+    // 例: Nashor's Tooth → base: 15, apRatio: 0.15
+  | { kind: "apAmp"; ratio: number }
+    // 総APを (1 + ratio) 倍する（stats-computer で適用）。
+    // 例: Rabadon's Deathcap → ratio: 0.30
+  | { kind: "onHitPhysicalCurrentHpPercent"; percent: number }
+    // 現在HP% の物理オンヒット。計算機は満HP前提で計算する。
+    // 例: Blade of the Ruined King → percent: 9（メレー値）
+  | { kind: "nthHitPhysical"; hitCount: number; minDamage: number; maxDamage: number }
+    // N回目のAAで発動する物理ダメージ。攻撃側レベル1→18 で minDamage→maxDamage 線形補間。
+    // 例: Kraken Slayer → hitCount: 3, minDamage: 150, maxDamage: 210
+  | { kind: "spellblade"; baseAdRatio: number }
+    // アビリティ使用後の次のAA（常時発動前提）で基礎AD比率の物理ダメージを付与。
+    // 例: Trinity Force → baseAdRatio: 2.0
+  | { kind: "bonusAdToAp"; ratio: number }
+    // ボーナスADをAPに変換するパッシブ
+  | { kind: "other"; description: string }
+    // 計算対象外の複雑なパッシブ（表示のみ）
 ```
 
 > `armorPenPercent` / `magicPenPercent` は `ItemStats` にも存在するが、アイテムによっては
 > ステータスではなくパッシブとして実装されているため、両方を確認して合算する。
 
-> `critDamageAmp` は `damage-calculator` の auto attack 計算で適用する。
-> 複数アイテムが同種のパッシブを持つ場合は `bonusFactor` を合算する。
-
-> `onHitMagicDamage` は複数アイテムが持つ場合 `damage` を合算する。
+> パッシブ数値の正本は `infrastructure/data/item-passives.json`（git 管理）。
+> `items.json` はスクリプト生成で gitignore されており、`passives` フィールドは常に空配列。
+> `item-repository` がロード時に `item-passives.json` をマージする。
 
 ### SkillSlot
 
