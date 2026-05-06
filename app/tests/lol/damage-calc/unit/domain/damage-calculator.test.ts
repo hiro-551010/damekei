@@ -346,6 +346,16 @@ describe("calculateDamage", () => {
     expect(result.skills[0].preMitigation).toBe(130);
   });
 
+  it("Wit's End（onHitMagicDamage: 45）: MR軽減後の値が返る", () => {
+    const witsEnd = item({}, [{ kind: "onHitMagicDamage", damage: 45 }]);
+    const result = calculateDamage(
+      attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [witsEnd]),
+      defender(0, 60)
+    );
+
+    expect(result.autoAttack.onHitMagicPostMitigation).toBe(Math.round(45 * (100 / (100 + 60))));
+  });
+
   it("onHitMagicDamage パッシブなし: null が返る", () => {
     const result = calculateDamage(
       attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 })),

@@ -10,7 +10,7 @@
 | 4 | Kraken Slayer | 3回目ヒット物理ダメージ（レベルスケール） | pending |
 | 5 | Blade of the Ruined King | 現在HP% 物理オンヒット | pending |
 | 6 | Nashor's Tooth | AP オンヒット魔法ダメージ | pending |
-| 7 | Wit's End | オンヒット魔法ダメージ | pending |
+| 7 | Wit's End | オンヒット魔法ダメージ | done |
 | 8 | Trinity Force | スペルブレード | pending |
 
 ## チャンピオンパッシブ・エッジケース実装
