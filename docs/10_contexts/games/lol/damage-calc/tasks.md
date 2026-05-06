@@ -4,19 +4,14 @@
 
 | # | アイテム | 内容 | 状態 |
 |---|----------|------|------|
-| 1 | Infinity Edge | クリットダメージ倍率増加（60%以上クリ時 175%→210%） | done |
+| 1 | Infinity Edge | クリットダメージ倍率増加（40%以上クリ時 175%→210%） | done |
 | 2 | Statikk Shiv | オンヒット雷撃魔法ダメージ | done |
-| 3 | Last Whisper | 10% 物理貫通 | pending |
-| 4 | Lord Dominik's Regards | 30% 物理貫通 | pending |
-| 5 | Serylda's Grudge | 30% 物理貫通 | pending |
-| 6 | Mortal Reminder | 30% 物理貫通 | pending |
-| 7 | Void Staff | 45% 魔法貫通 | pending |
-| 8 | Rabadon's Deathcap | ボーナスAP 40% 増幅 | pending |
-| 9 | Kraken Slayer | 3回目ヒット真のダメージ | pending |
-| 10 | Blade of the Ruined King | 現在HP% 物理オンヒット | pending |
-| 11 | Nashor's Tooth | AP オンヒット魔法ダメージ | pending |
-| 12 | Wit's End | オンヒット魔法ダメージ | pending |
-| 13 | Trinity Force / Sheen | スペルブレード | pending |
+| 3 | Rabadon's Deathcap | AP 30% 増幅 | pending |
+| 4 | Kraken Slayer | 3回目ヒット物理ダメージ（レベルスケール） | pending |
+| 5 | Blade of the Ruined King | 現在HP% 物理オンヒット | pending |
+| 6 | Nashor's Tooth | AP オンヒット魔法ダメージ | pending |
+| 7 | Wit's End | オンヒット魔法ダメージ | pending |
+| 8 | Trinity Force | スペルブレード | pending |
 
 ## チャンピオンパッシブ・エッジケース実装
 
