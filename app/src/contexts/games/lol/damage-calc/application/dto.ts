@@ -85,6 +85,8 @@ export type AutoAttackResultDto = {
   hpPercent: number;
   critPostMitigation: number | null;
   critHpPercent: number | null;
+  onHitMagicPostMitigation: number | null;
+  onHitMagicHpPercent: number | null;
 };
 
 export type CalculateDamageResultDto = {

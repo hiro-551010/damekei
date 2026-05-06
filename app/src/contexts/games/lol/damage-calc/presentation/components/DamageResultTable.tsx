@@ -42,7 +42,12 @@ export function DamageResultTable({ autoAttack, skills }: Props) {
         </thead>
         <tbody>
           <tr className="border-b border-gray-100 hover:bg-gray-50">
-            <td className="py-2 px-3 font-bold">AA</td>
+            <td className="py-2 px-3 font-bold">
+              AA
+              {autoAttack.onHitMagicPostMitigation !== null && (
+                <span className="ml-1.5 px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700">オンヒット効果あり</span>
+              )}
+            </td>
             <td className="py-2 px-3"><PhysicalBadge /></td>
             <td className="py-2 px-3 text-right tabular-nums">{autoAttack.preMitigation}</td>
             <td className="py-2 px-3 text-right tabular-nums text-foreground">{autoAttack.effectiveResistance}</td>
@@ -50,8 +55,26 @@ export function DamageResultTable({ autoAttack, skills }: Props) {
             <td className="py-2 px-3 text-right tabular-nums text-foreground">{autoAttack.reductionPercent}%</td>
             <td className="py-2 px-3 text-right tabular-nums font-semibold text-blue-600">{autoAttack.hpPercent}%</td>
           </tr>
+          {autoAttack.onHitMagicPostMitigation !== null && (
+            <tr className="border-b border-gray-100 hover:bg-gray-50">
+              <td className="py-2 px-3 font-bold">AA (オンヒット)</td>
+              <td className="py-2 px-3">
+                <span className="px-1.5 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-700">魔法</span>
+              </td>
+              <td className="py-2 px-3 text-right tabular-nums">—</td>
+              <td className="py-2 px-3 text-right tabular-nums text-foreground">—</td>
+              <td className="py-2 px-3 text-right tabular-nums font-semibold">{autoAttack.onHitMagicPostMitigation}</td>
+              <td className="py-2 px-3 text-right tabular-nums text-foreground">—</td>
+              <td className="py-2 px-3 text-right tabular-nums font-semibold text-blue-600">{autoAttack.onHitMagicHpPercent}%</td>
+            </tr>
+          )}
           <tr className="border-b border-gray-100 hover:bg-gray-50">
-            <td className="py-2 px-3 font-bold text-foreground">AA (クリット)</td>
+            <td className="py-2 px-3 font-bold text-foreground">
+              AA (クリット)
+              {autoAttack.onHitMagicPostMitigation !== null && (
+                <span className="ml-1.5 px-1.5 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700">オンヒット効果あり</span>
+              )}
+            </td>
             <td className="py-2 px-3"><PhysicalBadge /></td>
             <td className="py-2 px-3 text-right tabular-nums text-foreground">
               {autoAttack.critPostMitigation !== null ? Math.round(autoAttack.preMitigation * 1.75) : "—"}

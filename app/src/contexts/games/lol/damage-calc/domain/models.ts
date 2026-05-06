@@ -56,6 +56,7 @@ export type ItemPassive =
   | { kind: "magicPenPercent"; value: number }
   | { kind: "critDamageAmp"; bonusFactor: number; minCritChance: number }
   | { kind: "bonusAdToAp"; ratio: number }
+  | { kind: "onHitMagicDamage"; damage: number }
   | { kind: "other"; description: string };
 
 export type Item = {
@@ -120,6 +121,8 @@ export type AutoAttackResult = {
   hpPercent: number;
   critPostMitigation: number | null;
   critHpPercent: number | null;
+  onHitMagicPostMitigation: number | null;
+  onHitMagicHpPercent: number | null;
 };
 
 export type SkillDamageResult = {

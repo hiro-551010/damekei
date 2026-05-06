@@ -102,6 +102,10 @@ type ItemPassive =
     // クリットダメージ倍率の加算。critChance >= minCritChance のとき有効。
     // 例: Infinity Edge → bonusFactor: 0.35, minCritChance: 60
     //     通常 1.75 倍 → 1.75 + 0.35 = 2.10 倍
+  | { kind: "onHitMagicDamage"; damage: number }
+    // AA ヒット時に付与される魔法ダメージ（常時発動前提で計算）。
+    // 例: Statikk Shiv → damage: 80
+    // 攻撃側の magicPenFlat / magicPenPercent を適用し、防御側 MR で軽減する。
   | { kind: "bonusAdToAp"; ratio: number }                  // ボーナスADをAPに変換するパッシブ
   | { kind: "other"; description: string }                  // 計算対象外の複雑なパッシブ（表示のみ）
 ```
@@ -111,6 +115,8 @@ type ItemPassive =
 
 > `critDamageAmp` は `damage-calculator` の auto attack 計算で適用する。
 > 複数アイテムが同種のパッシブを持つ場合は `bonusFactor` を合算する。
+
+> `onHitMagicDamage` は複数アイテムが持つ場合 `damage` を合算する。
 
 ### SkillSlot
 
@@ -222,6 +228,8 @@ type AutoAttackResult = {
   hpPercent: number;
   critPostMitigation: number | null;  // null = 攻撃側にクリティカル率 0（クリティカルアイテムなし）
   critHpPercent: number | null;
+  onHitMagicPostMitigation: number | null;  // null = オンヒット魔法ダメージなし
+  onHitMagicHpPercent: number | null;
 };
 
 type SkillDamageResult = {
