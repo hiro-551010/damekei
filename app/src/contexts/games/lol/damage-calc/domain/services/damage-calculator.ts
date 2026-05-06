@@ -43,10 +43,18 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
     ? (critPostMitigation! / defStats.hp) * 100
     : null;
 
-  const onHitPreMitigation = attacker.items
+  const onHitMagicFlat = attacker.items
     .flatMap((i) => i.passives)
     .filter((p) => p.kind === "onHitMagicDamage")
     .reduce((sum, p) => sum + (p as { kind: "onHitMagicDamage"; damage: number }).damage, 0);
+  const onHitMagicScaled = attacker.items
+    .flatMap((i) => i.passives)
+    .filter((p) => p.kind === "onHitMagicDamageScaled")
+    .reduce((sum, p) => {
+      const { base, apRatio } = p as { kind: "onHitMagicDamageScaled"; base: number; apRatio: number };
+      return sum + base + apRatio * atkStats.ap;
+    }, 0);
+  const onHitPreMitigation = onHitMagicFlat + onHitMagicScaled;
   const effMR = effectiveMagicResist(defStats.magicResist, atkStats);
   const onHitMagicPostMitigation = onHitPreMitigation > 0
     ? Math.round(mitigate(onHitPreMitigation, effMR))

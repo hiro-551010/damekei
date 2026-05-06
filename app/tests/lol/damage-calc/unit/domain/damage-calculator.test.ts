@@ -346,6 +346,30 @@ describe("calculateDamage", () => {
     expect(result.skills[0].preMitigation).toBe(130);
   });
 
+  it("Nashor's Tooth（onHitMagicDamageScaled）: base + AP比率がMR軽減後に返る", () => {
+    const nashor = item({ ap: 100 }, [{ kind: "onHitMagicDamageScaled", base: 15, apRatio: 0.15 }]);
+    const result = calculateDamage(
+      attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [nashor]),
+      defender(0, 60)
+    );
+    // AP = 100 (no apAmp), damage = 15 + 0.15 * 100 = 30
+    const preMit = 15 + 0.15 * 100;
+    expect(result.autoAttack.onHitMagicPostMitigation).toBe(Math.round(preMit * (100 / 160)));
+  });
+
+  it("Nashor's Tooth + Rabadon's: APが増幅されてからオンヒットダメージに反映される", () => {
+    const nashor = item({ ap: 100 }, [{ kind: "onHitMagicDamageScaled", base: 15, apRatio: 0.15 }]);
+    const rabadon = item({ ap: 0 }, [{ kind: "apAmp", ratio: 0.30 }]);
+    const result = calculateDamage(
+      attacker([skill("Q", "physical", [0]), skill("W", "magic", [0]), skill("E", "true", [0]), skill("R", "physical", [0])], alloc({ q: 0, w: 0, e: 0, r: 0 }), [nashor, rabadon]),
+      defender(0, 0)
+    );
+    // AP = 100 * 1.30 = 130 → damage = 15 + 0.15 * 130 = 34.5
+    const ap = 130;
+    const preMit = 15 + 0.15 * ap;
+    expect(result.autoAttack.onHitMagicPostMitigation).toBe(Math.round(preMit));
+  });
+
   it("Wit's End（onHitMagicDamage: 45）: MR軽減後の値が返る", () => {
     const witsEnd = item({}, [{ kind: "onHitMagicDamage", damage: 45 }]);
     const result = calculateDamage(
