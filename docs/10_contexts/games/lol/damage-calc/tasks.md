@@ -20,7 +20,7 @@
 | 14 | Aatrox | done |
 | 15 | Ahri | pending |
 | 16 | Akali | done |
-| 17 | Akshan | pending |
+| 17 | Akshan | done |
 | 18 | Alistar | pending |
 | 19 | Ambessa | pending |
 | 20 | Amumu | pending |
