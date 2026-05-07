@@ -23,6 +23,7 @@
 | `stateModifiers` | `ChampionSpecies.stateModifiers` として追加 |
 | `skillVariants` | スロットが一致するスキルの `variants` フィールドに追加 |
 | `skillOverrides` | スロットが一致するスキルのフィールドを上書き（`{ ...skill, ...override }`） |
+| `aaCritOverride` | `ChampionSpecies.aaCritOverride` として追加。AA クリット挙動を上書きする |
 
 > `skillOverrides` は Meraki データが正しく取得できないスキル（例: Ahri Q の damageType）を
 > 修正するために使う。スプレッドによる上書きなので、変更が必要なフィールドだけ指定すればよい。

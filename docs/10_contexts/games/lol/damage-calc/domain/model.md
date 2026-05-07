@@ -49,6 +49,7 @@ Meraki Analytics から取得した種族データ。リポジトリから取得
 | `skills` | `SkillDamageSpec[]` | Q/W/E/R のダメージ係数一覧 |
 | `passiveSpec` | `ChampionPassiveSpec \| undefined` | チャンピオン固有パッシブ（LoL Wiki 手動収集）|
 | `stateModifiers` | `ChampionStateModifier[] \| undefined` | ステート変化（R 発動など）の定義 |
+| `aaCritOverride` | `AACritOverride \| undefined` | AA クリット挙動のオーバーライド（Ashe 等）|
 
 ### Level
 
@@ -178,6 +179,20 @@ type SkillVariantSpec = {
 > 全てのバリアントは親スキルのダメージ式に乗数をかけることで表現できる。
 > ダメージ種別だけ異なる場合は `damageType` を指定する（例: Ahri Q 復路 → `multiplier: 1.0, damageType: "true"`）。
 > 独立した計算式（異なる base 値・係数）は不要なため `kind` フィールドは持たない。
+
+### AACritOverride
+
+AA のクリット挙動をチャンピオン固有にオーバーライドするための型。
+
+```typescript
+type AACritOverride = {
+  alwaysCrit: boolean;    // true のとき critChance = 0 でもクリット行を表示する
+  baseMultiplier: number; // 1.75 の代わりに使うクリット倍率（例: Ashe → 1.10）
+};
+```
+
+> `bonusCritFactor`（IE 等の critDamageAmp パッシブ）は `baseMultiplier` に加算される。
+> Ashe はクリットアイテムなしでも 1.10 倍、IE 装備（minCritChance 条件を満たす場合）で 1.10 + 0.35 = 1.45 倍になる。
 
 ### ChampionPassiveSpec
 
