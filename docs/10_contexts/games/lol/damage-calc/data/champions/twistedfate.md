@@ -1,4 +1,4 @@
-# Twisted Fate
+# Twisted Fate（ツイステッドフェイト）champion-passives.json
 
 ## champion-passives.json エントリ
 

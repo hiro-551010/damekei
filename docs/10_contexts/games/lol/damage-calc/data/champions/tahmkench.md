@@ -1,4 +1,4 @@
-# Tahm Kench
+# Tahm Kench（タム・ケンチ）champion-passives.json
 
 ## champion-passives.json エントリ
 

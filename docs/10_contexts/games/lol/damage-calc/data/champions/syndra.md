@@ -1,4 +1,4 @@
-# Syndra
+# Syndra（シンドラ）champion-passives.json
 
 ## champion-passives.json エントリ
 

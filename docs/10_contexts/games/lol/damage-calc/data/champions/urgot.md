@@ -1,4 +1,4 @@
-# Urgot
+# Urgot（アーゴット）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Trundle
+# Trundle（トランドル）champion-passives.json
 
 ## champion-passives.json エントリ
 

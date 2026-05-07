@@ -1,4 +1,4 @@
-# Zilean
+# Zilean（ジリアン）champion-passives.json
 
 ## champion-passives.json エントリ
 

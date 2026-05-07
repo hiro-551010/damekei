@@ -1,4 +1,4 @@
-# Vayne
+# Vayne（ヴェイン）champion-passives.json
 
 ## champion-passives.json エントリ
 

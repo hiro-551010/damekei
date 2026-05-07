@@ -1,4 +1,4 @@
-# Riven
+# Riven（リヴェン）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Varus
+# Varus（ヴァルス）champion-passives.json
 
 ## champion-passives.json エントリ
 

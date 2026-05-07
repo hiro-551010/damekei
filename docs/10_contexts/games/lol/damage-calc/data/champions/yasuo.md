@@ -1,12 +1,14 @@
-# Yasuo
+# Yasuo（ヤスオ）champion-passives.json
 
 ## champion-passives.json エントリ
 
 ```json
-"Yasuo": {
-  "aaCritOverride": {
-    "alwaysCrit": false,
-    "baseMultiplier": 1.5
+{
+  "Yasuo": {
+    "aaCritOverride": {
+      "alwaysCrit": false,
+      "baseMultiplier": 1.5
+    }
   }
 }
 ```

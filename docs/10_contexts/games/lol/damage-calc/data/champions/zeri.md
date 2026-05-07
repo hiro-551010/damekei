@@ -1,4 +1,4 @@
-# Zeri
+# Zeri（ゼリ）champion-passives.json
 
 ## champion-passives.json エントリ
 

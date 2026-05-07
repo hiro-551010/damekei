@@ -1,4 +1,4 @@
-# Vladimir
+# Vladimir（ブラッドミア）champion-passives.json
 
 ## champion-passives.json エントリ
 

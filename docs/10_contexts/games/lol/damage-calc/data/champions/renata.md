@@ -1,4 +1,4 @@
-# Renata Glasc
+# Renata Glasc（レナータ・グラスク）champion-passives.json
 
 ## champion-passives.json エントリ
 

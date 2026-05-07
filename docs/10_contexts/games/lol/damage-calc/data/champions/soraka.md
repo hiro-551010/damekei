@@ -1,4 +1,4 @@
-# Soraka
+# Soraka（ソラカ）champion-passives.json
 
 ## champion-passives.json エントリ
 

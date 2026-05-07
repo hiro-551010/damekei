@@ -1,4 +1,4 @@
-# Zyra
+# Zyra（ザイラ）champion-passives.json
 
 ## champion-passives.json エントリ
 

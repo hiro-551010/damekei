@@ -1,4 +1,4 @@
-# Senna
+# Senna（センナ）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Sejuani
+# Sejuani（セジュアニ）champion-passives.json
 
 ## champion-passives.json エントリ
 

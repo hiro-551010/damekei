@@ -1,4 +1,4 @@
-# Vi
+# Vi（ヴァイ）champion-passives.json
 
 ## champion-passives.json エントリ
 

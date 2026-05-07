@@ -1,4 +1,4 @@
-# Smolder
+# Smolder（スモルダー）champion-passives.json
 
 ## champion-passives.json エントリ
 

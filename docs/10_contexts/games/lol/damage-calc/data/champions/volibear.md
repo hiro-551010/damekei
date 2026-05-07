@@ -1,4 +1,4 @@
-# Volibear
+# Volibear（ボリベア）champion-passives.json
 
 ## champion-passives.json エントリ
 

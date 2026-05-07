@@ -1,4 +1,4 @@
-# Ziggs
+# Ziggs（ジグス）champion-passives.json
 
 ## champion-passives.json エントリ
 

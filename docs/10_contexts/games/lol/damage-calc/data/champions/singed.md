@@ -1,4 +1,4 @@
-# Singed
+# Singed（シンジド）champion-passives.json
 
 ## champion-passives.json エントリ
 

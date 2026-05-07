@@ -1,4 +1,4 @@
-# Sivir
+# Sivir（シヴィア）champion-passives.json
 
 ## champion-passives.json エントリ
 

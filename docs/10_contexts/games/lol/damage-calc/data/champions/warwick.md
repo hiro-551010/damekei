@@ -1,4 +1,4 @@
-# Warwick
+# Warwick（ワーウィック）champion-passives.json
 
 ## champion-passives.json エントリ
 

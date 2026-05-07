@@ -1,4 +1,4 @@
-# Zac
+# Zac（ザック）champion-passives.json
 
 ## champion-passives.json エントリ
 

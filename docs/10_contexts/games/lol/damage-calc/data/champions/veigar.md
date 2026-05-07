@@ -1,4 +1,4 @@
-# Veigar
+# Veigar（ベイガー）champion-passives.json
 
 ## champion-passives.json エントリ
 

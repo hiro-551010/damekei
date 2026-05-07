@@ -1,4 +1,4 @@
-# Udyr
+# Udyr（ウディア）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Tryndamere
+# Tryndamere（トリンダメア）champion-passives.json
 
 ## champion-passives.json エントリ
 

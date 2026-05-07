@@ -1,4 +1,4 @@
-# Yorick
+# Yorick（ヨリック）champion-passives.json
 
 ## champion-passives.json エントリ
 

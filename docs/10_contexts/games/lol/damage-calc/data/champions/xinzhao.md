@@ -1,4 +1,4 @@
-# Xin Zhao
+# Xin Zhao（ジン・ジャオ）champion-passives.json
 
 ## champion-passives.json エントリ
 

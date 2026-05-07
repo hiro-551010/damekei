@@ -1,4 +1,4 @@
-# Viego
+# Viego（ヴィエゴ）champion-passives.json
 
 ## champion-passives.json エントリ
 

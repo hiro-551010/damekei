@@ -1,4 +1,4 @@
-# Zoe
+# Zoe（ゾーイ）champion-passives.json
 
 ## champion-passives.json エントリ
 

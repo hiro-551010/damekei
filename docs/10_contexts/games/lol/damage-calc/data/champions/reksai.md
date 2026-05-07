@@ -1,4 +1,4 @@
-# Rek'Sai
+# Rek'Sai（レク＝サイ）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Seraphine
+# Seraphine（セラフィン）champion-passives.json
 
 ## champion-passives.json エントリ
 

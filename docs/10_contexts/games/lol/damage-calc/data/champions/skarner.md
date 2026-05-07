@@ -1,4 +1,4 @@
-# Skarner
+# Skarner（スカーナー）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Swain
+# Swain（スウェイン）champion-passives.json
 
 ## champion-passives.json エントリ
 

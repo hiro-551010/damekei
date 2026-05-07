@@ -1,4 +1,4 @@
-# Xayah
+# Xayah（ザヤ）champion-passives.json
 
 ## champion-passives.json エントリ
 

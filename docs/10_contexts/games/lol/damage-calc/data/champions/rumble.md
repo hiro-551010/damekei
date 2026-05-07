@@ -1,4 +1,4 @@
-# Rumble
+# Rumble（ランブル）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Taliyah
+# Taliyah（タリヤ）champion-passives.json
 
 ## champion-passives.json エントリ
 

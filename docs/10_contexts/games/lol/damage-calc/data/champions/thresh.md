@@ -1,4 +1,4 @@
-# Thresh
+# Thresh（スレッシュ）champion-passives.json
 
 ## champion-passives.json エントリ
 

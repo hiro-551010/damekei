@@ -1,12 +1,14 @@
-# Yone
+# Yone（ヨネ）champion-passives.json
 
 ## champion-passives.json エントリ
 
 ```json
-"Yone": {
-  "aaCritOverride": {
-    "alwaysCrit": false,
-    "baseMultiplier": 1.5
+{
+  "Yone": {
+    "aaCritOverride": {
+      "alwaysCrit": false,
+      "baseMultiplier": 1.5
+    }
   }
 }
 ```

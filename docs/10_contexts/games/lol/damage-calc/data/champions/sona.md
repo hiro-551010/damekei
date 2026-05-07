@@ -1,4 +1,4 @@
-# Sona
+# Sona（ソナ）champion-passives.json
 
 ## champion-passives.json エントリ
 

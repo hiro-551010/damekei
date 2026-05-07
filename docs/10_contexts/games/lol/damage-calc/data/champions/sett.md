@@ -1,17 +1,19 @@
-# Sett
+# Sett（セット）champion-passives.json
 
 ## champion-passives.json エントリ
 
 ```json
-"Sett": {
-  "skillVariants": {
-    "W": [
-      {
-        "name": "W（中心ヒット・真ダメージ）",
-        "multiplier": 1.0,
-        "damageType": "true"
-      }
-    ]
+{
+  "Sett": {
+    "skillVariants": {
+      "W": [
+        {
+          "name": "W（中心ヒット・真ダメージ）",
+          "multiplier": 1.0,
+          "damageType": "true"
+        }
+      ]
+    }
   }
 }
 ```

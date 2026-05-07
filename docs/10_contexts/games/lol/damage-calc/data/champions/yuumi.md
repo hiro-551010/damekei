@@ -1,4 +1,4 @@
-# Yuumi
+# Yuumi（ユーミ）champion-passives.json
 
 ## champion-passives.json エントリ
 

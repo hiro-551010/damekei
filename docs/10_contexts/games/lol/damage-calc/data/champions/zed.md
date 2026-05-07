@@ -1,4 +1,4 @@
-# Zed
+# Zed（ゼド）champion-passives.json
 
 ## champion-passives.json エントリ
 

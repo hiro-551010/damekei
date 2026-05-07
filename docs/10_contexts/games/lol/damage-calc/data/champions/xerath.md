@@ -1,4 +1,4 @@
-# Xerath
+# Xerath（ゼラス）champion-passives.json
 
 ## champion-passives.json エントリ
 

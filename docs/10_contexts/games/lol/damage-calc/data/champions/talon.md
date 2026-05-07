@@ -1,4 +1,4 @@
-# Talon
+# Talon（タロン）champion-passives.json
 
 ## champion-passives.json エントリ
 

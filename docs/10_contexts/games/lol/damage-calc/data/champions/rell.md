@@ -1,4 +1,4 @@
-# Rell
+# Rell（レル）champion-passives.json
 
 ## champion-passives.json エントリ
 

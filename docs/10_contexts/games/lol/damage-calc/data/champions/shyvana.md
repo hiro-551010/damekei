@@ -1,4 +1,4 @@
-# Shyvana
+# Shyvana（シヴァーナ）champion-passives.json
 
 ## champion-passives.json エントリ
 

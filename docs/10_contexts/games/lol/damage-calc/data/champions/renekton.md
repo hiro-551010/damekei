@@ -1,4 +1,4 @@
-# Renekton
+# Renekton（レネクトン）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Vel'Koz
+# Vel'Koz（ヴェル＝コズ）champion-passives.json
 
 ## champion-passives.json エントリ
 

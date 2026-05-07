@@ -1,4 +1,4 @@
-# Teemo
+# Teemo（ティーモ）champion-passives.json
 
 ## champion-passives.json エントリ
 

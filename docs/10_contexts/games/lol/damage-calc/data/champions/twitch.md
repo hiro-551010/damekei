@@ -1,4 +1,4 @@
-# Twitch
+# Twitch（トゥイッチ）champion-passives.json
 
 ## champion-passives.json エントリ
 

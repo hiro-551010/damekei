@@ -1,4 +1,4 @@
-# Vex
+# Vex（ヴェックス）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Taric
+# Taric（タリック）champion-passives.json
 
 ## champion-passives.json エントリ
 

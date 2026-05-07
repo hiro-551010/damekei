@@ -1,4 +1,4 @@
-# Ryze
+# Ryze（ライズ）champion-passives.json
 
 ## champion-passives.json エントリ
 

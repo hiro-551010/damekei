@@ -1,4 +1,4 @@
-# Samira
+# Samira（サミーラ）champion-passives.json
 
 ## champion-passives.json エントリ
 

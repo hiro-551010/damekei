@@ -1,4 +1,4 @@
-# Viktor
+# Viktor（ビクター）champion-passives.json
 
 ## champion-passives.json エントリ
 

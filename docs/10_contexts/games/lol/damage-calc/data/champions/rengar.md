@@ -1,4 +1,4 @@
-# Rengar
+# Rengar（レンガー）champion-passives.json
 
 ## champion-passives.json エントリ
 

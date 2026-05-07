@@ -1,4 +1,4 @@
-# Sylas
+# Sylas（サイラス）champion-passives.json
 
 ## champion-passives.json エントリ
 

@@ -1,4 +1,4 @@
-# Wukong
+# Wukong（ウーコン）champion-passives.json
 
 ## champion-passives.json エントリ
 
