@@ -34,7 +34,8 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
     : 0;
   const hpPercent = defStats.hp > 0 ? (postMitigation / defStats.hp) * 100 : 0;
 
-  const hasCrit = atkStats.critChance > 0;
+  const aaCritOverride = attacker.species.aaCritOverride;
+  const hasCrit = (aaCritOverride?.alwaysCrit ?? false) || atkStats.critChance > 0;
   const bonusCritFactor = attacker.items
     .flatMap((i) => i.passives)
     .reduce((sum, p) => {
@@ -42,7 +43,7 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
       if (atkStats.critChance < p.minCritChance) return sum;
       return sum + p.bonusFactor;
     }, 0);
-  const critMultiplier = 1.75 + bonusCritFactor;
+  const critMultiplier = (aaCritOverride?.baseMultiplier ?? 1.75) + bonusCritFactor;
   const critPreMitigation = atkStats.totalAd * critMultiplier;
   const critPostMitigation = hasCrit ? mitigate(critPreMitigation, effArmor) : null;
   const critHpPercent = hasCrit && defStats.hp > 0

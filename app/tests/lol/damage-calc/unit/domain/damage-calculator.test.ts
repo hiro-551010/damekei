@@ -592,3 +592,60 @@ describe('Aatrox 固有ロジック', () => {
     expect(stateResult!.autoAttack.preMitigation).toBe(72);
   });
 });
+
+// ── Ashe 固有ロジック（aaCritOverride） ──────────────────────────────
+import type { AACritOverride } from "@/contexts/games/lol/damage-calc/domain/models";
+
+describe('Ashe 固有ロジック（aaCritOverride）', () => {
+  function asheSpecies(aaCritOverride?: AACritOverride): ChampionSpecies {
+    return {
+      ...species([
+        skill('Q', 'physical', [0, 0, 0, 0, 0]),
+        skill('W', 'physical', [0, 0, 0, 0, 0]),
+        skill('E', 'physical', [0, 0, 0, 0, 0]),
+        skill('R', 'magic', [0, 0, 0]),
+      ]),
+      id: 'Ashe',
+      name: 'アッシュ',
+      nameEn: 'Ashe',
+      ...(aaCritOverride !== undefined ? { aaCritOverride } : {}),
+    };
+  }
+
+  it('critChance=0 でも alwaysCrit=true のとき critPostMitigation が返る', () => {
+    const atk: Champion = {
+      species: asheSpecies({ alwaysCrit: true, baseMultiplier: 1.10 }),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const result = calculateDamage(atk, { species: species([], 0, 0), level: 1, items: [], skillAllocation: { q: 0, w: 0, e: 0, r: 0 } });
+    // preMit = BASE_AD=50, critPreMit = 50 * 1.10 = 55
+    expect(result.autoAttack.critPostMitigation).toBe(Math.round(BASE_AD * 1.10));
+  });
+
+  it('baseMultiplier=1.10 が使われる（1.75 ではない）', () => {
+    const atk: Champion = {
+      species: asheSpecies({ alwaysCrit: true, baseMultiplier: 1.10 }),
+      level: 1,
+      items: [],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const result = calculateDamage(atk, { species: species([], 0, 0), level: 1, items: [], skillAllocation: { q: 0, w: 0, e: 0, r: 0 } });
+    expect(result.autoAttack.critPostMitigation).not.toBe(Math.round(BASE_AD * 1.75));
+    expect(result.autoAttack.critPostMitigation).toBe(Math.round(BASE_AD * 1.10));
+  });
+
+  it('IE（critDamageAmp）装備時: baseMultiplier + bonusFactor が使われる', () => {
+    const ie = item({ critChance: 20 }, [{ kind: 'critDamageAmp', bonusFactor: 0.35, minCritChance: 1 }]);
+    const atk: Champion = {
+      species: asheSpecies({ alwaysCrit: true, baseMultiplier: 1.10 }),
+      level: 1,
+      items: [ie],
+      skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
+    };
+    const result = calculateDamage(atk, { species: species([], 0, 0), level: 1, items: [], skillAllocation: { q: 0, w: 0, e: 0, r: 0 } });
+    // critMultiplier = 1.10 + 0.35 = 1.45
+    expect(result.autoAttack.critPostMitigation).toBe(Math.round(BASE_AD * 1.45));
+  });
+});

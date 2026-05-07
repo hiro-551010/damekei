@@ -1,5 +1,5 @@
 import { ChampionRepository } from "../domain/ports";
-import { ChampionPassiveSpec, ChampionSpecies, ChampionStateModifier, SkillVariantSpec } from "../domain/models";
+import { AACritOverride, ChampionPassiveSpec, ChampionSpecies, ChampionStateModifier, SkillVariantSpec } from "../domain/models";
 import { SkillSlot } from "../domain/types";
 import championsData from "./data/champions.json";
 import championPassivesData from "./data/champion-passives.json";
@@ -11,6 +11,7 @@ type ChampionPassiveEntry = {
   skillVariants?: Partial<Record<SkillSlot, SkillVariantSpec[]>>;
   skillOverrides?: Partial<Record<SkillSlot, SkillOverrideEntry>>;
   stateModifiers?: ChampionStateModifier[];
+  aaCritOverride?: AACritOverride;
 };
 
 const passivesMap = championPassivesData as Record<string, ChampionPassiveEntry>;
@@ -30,6 +31,7 @@ const champions: ChampionSpecies[] = (championsData as ChampionSpecies[]).map((c
     skills,
     ...(entry.passiveSpec && { passiveSpec: entry.passiveSpec }),
     ...(entry.stateModifiers && { stateModifiers: entry.stateModifiers }),
+    ...(entry.aaCritOverride && { aaCritOverride: entry.aaCritOverride }),
   };
 });
 

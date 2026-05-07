@@ -170,5 +170,11 @@
         "name": "Glacial Storm（1秒あたり）"
       }
     }
+  },
+  "Ashe": {
+    "aaCritOverride": {
+      "alwaysCrit": true,
+      "baseMultiplier": 1.10
+    }
   }
 }

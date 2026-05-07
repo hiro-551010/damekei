@@ -43,6 +43,11 @@ export type ChampionStateModifier = {
   percentByRank: number[];
 };
 
+export type AACritOverride = {
+  alwaysCrit: boolean;
+  baseMultiplier: number;
+};
+
 export type ChampionSpecies = {
   id: string;
   name: string;
@@ -52,6 +57,7 @@ export type ChampionSpecies = {
   skills: SkillDamageSpec[];
   passiveSpec?: ChampionPassiveSpec;
   stateModifiers?: ChampionStateModifier[];
+  aaCritOverride?: AACritOverride;
 };
 
 export type ItemStats = {
