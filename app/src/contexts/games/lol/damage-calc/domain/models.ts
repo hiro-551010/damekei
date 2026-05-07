@@ -33,6 +33,7 @@ export type ChampionPassiveSpec =
 export type SkillVariantSpec = {
   name: string;
   multiplier: number;
+  damageType?: DamageType;
 };
 
 export type ChampionStateModifier = {

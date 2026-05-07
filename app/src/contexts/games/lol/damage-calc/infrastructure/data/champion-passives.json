@@ -2,19 +2,90 @@
   "Aatrox": {
     "passiveSpec": {
       "kind": "onHitMaxHpPercent",
-      "percentByLevel": [4.0, 4.39, 4.79, 5.18, 5.58, 5.97, 6.37, 6.76, 7.16, 7.55, 7.95, 8.34, 8.74, 9.13, 9.53, 9.92, 10.32, 10.71],
+      "percentByLevel": [
+        4.0,
+        4.39,
+        4.79,
+        5.18,
+        5.58,
+        5.97,
+        6.37,
+        6.76,
+        7.16,
+        7.55,
+        7.95,
+        8.34,
+        8.74,
+        9.13,
+        9.53,
+        9.92,
+        10.32,
+        10.71
+      ],
       "damageType": "physical"
     },
     "skillVariants": {
-      "Q": [{ "name": "スイートスポット", "multiplier": 1.7 }]
+      "Q": [
+        {
+          "name": "スイートスポット",
+          "multiplier": 1.7
+        }
+      ]
     },
     "stateModifiers": [
       {
         "kind": "bonusAdFromBaseAd",
         "name": "R (World Ender)",
         "triggerSlot": "R",
-        "percentByRank": [20, 30, 40]
+        "percentByRank": [
+          20,
+          30,
+          40
+        ]
       }
     ]
+  },
+  "Ahri": {
+    "skillOverrides": {
+      "Q": {
+        "name": "オーブ・オブ・デセプション",
+        "damageType": "magic",
+        "baseDamageByRank": [
+          40,
+          65,
+          90,
+          115,
+          140
+        ],
+        "totalAdRatioByRank": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "bonusAdRatioByRank": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "apRatioByRank": [
+          0.35,
+          0.35,
+          0.35,
+          0.35,
+          0.35
+        ],
+        "variants": [
+          {
+            "name": "Q（復路・真ダメージ）",
+            "multiplier": 1.0,
+            "damageType": "true"
+          }
+        ]
+      }
+    }
   }
 }

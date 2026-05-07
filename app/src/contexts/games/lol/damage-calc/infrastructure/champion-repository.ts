@@ -4,9 +4,12 @@ import { SkillSlot } from "../domain/types";
 import championsData from "./data/champions.json";
 import championPassivesData from "./data/champion-passives.json";
 
+type SkillOverrideEntry = Partial<Omit<ChampionSpecies["skills"][0], "slot">>;
+
 type ChampionPassiveEntry = {
   passiveSpec?: ChampionPassiveSpec;
   skillVariants?: Partial<Record<SkillSlot, SkillVariantSpec[]>>;
+  skillOverrides?: Partial<Record<SkillSlot, SkillOverrideEntry>>;
   stateModifiers?: ChampionStateModifier[];
 };
 
@@ -17,8 +20,9 @@ const champions: ChampionSpecies[] = (championsData as ChampionSpecies[]).map((c
   if (!entry) return c;
 
   const skills = c.skills.map((skill) => {
+    const override = entry.skillOverrides?.[skill.slot];
     const variants = entry.skillVariants?.[skill.slot];
-    return variants ? { ...skill, variants } : skill;
+    return { ...skill, ...(override ?? {}), ...(variants ? { variants } : {}) };
   });
 
   return {

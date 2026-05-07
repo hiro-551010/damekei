@@ -153,14 +153,23 @@ function calculateSkills(
       : 0;
 
     const variants: SkillVariantResult[] = (spec.variants ?? []).map((v) => {
+      const vDamageType = v.damageType ?? spec.damageType;
       const vPreMit = preMitigation * v.multiplier;
-      const vPostMit = spec.damageType === "true" ? vPreMit : mitigate(vPreMit, effectiveResistance);
+      let vEffRes: number;
+      if (vDamageType === "physical") {
+        vEffRes = effectiveArmor(defStats.armor, atkStats);
+      } else if (vDamageType === "magic") {
+        vEffRes = effectiveMagicResist(defStats.magicResist, atkStats);
+      } else {
+        vEffRes = 0;
+      }
+      const vPostMit = vDamageType === "true" ? vPreMit : mitigate(vPreMit, vEffRes);
       const vReduction = vPreMit > 0 ? ((vPreMit - vPostMit) / vPreMit) * 100 : 0;
       const vHp = defStats.hp > 0 ? (vPostMit / defStats.hp) * 100 : 0;
       return {
         name: v.name,
         preMitigation: Math.round(vPreMit),
-        effectiveResistance: Math.round(effectiveResistance * 10) / 10,
+        effectiveResistance: Math.round(vEffRes * 10) / 10,
         postMitigation: Math.round(vPostMit),
         reductionPercent: Math.round(vReduction * 10) / 10,
         hpPercent: Math.round(vHp * 10) / 10,
