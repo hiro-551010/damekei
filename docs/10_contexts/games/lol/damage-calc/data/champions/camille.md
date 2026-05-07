@@ -13,6 +13,13 @@
 | E（Hookshot） | magic。壁ヒット時のダメージを Meraki が返す |
 | R（The Hextech Ultimatum） | ダメージなし（隔離フィールド展開）。preMitigation = 0 で問題なし |
 
+## 要確認
+
+| 項目 | 懸念点 |
+|---|---|
+| Q ダメージ値 | Meraki が Q1（物理のみ）か Q2（物理 + 真ダメージ合算）かのどちらを返すか不明。Q2 合算の場合は damageType が mixed になるため skillOverride が必要になる可能性あり |
+| W ダメージ値 | 外縁（physical + 最大HP% 真ダメージ）と内側（physical のみ）が混在。Meraki がどちらを返すか確認すること。外縁の真ダメージ部分が誤って physical として含まれている可能性がある |
+
 ## 対象外
 
 | 項目 | 理由 |
