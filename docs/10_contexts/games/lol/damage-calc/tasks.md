@@ -23,7 +23,7 @@
 | 17 | Akshan | done |
 | 18 | Alistar | done |
 | 19 | Ambessa | done |
-| 20 | Amumu | pending |
+| 20 | Amumu | done |
 | 21 | Anivia | pending |
 | 22 | Annie | pending |
 | 23 | Aphelios | pending |

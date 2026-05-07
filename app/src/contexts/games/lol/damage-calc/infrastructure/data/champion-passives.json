@@ -87,5 +87,73 @@
         ]
       }
     }
+  },
+  "Amumu": {
+    "skillOverrides": {
+      "W": {
+        "name": "デスペア",
+        "damageType": "magic",
+        "baseDamageByRank": [
+          10,
+          15,
+          20,
+          25,
+          30
+        ],
+        "totalAdRatioByRank": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "bonusAdRatioByRank": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "apRatioByRank": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "E": {
+        "name": "タントラム",
+        "damageType": "magic",
+        "baseDamageByRank": [
+          75,
+          100,
+          125,
+          150,
+          175
+        ],
+        "totalAdRatioByRank": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "bonusAdRatioByRank": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "apRatioByRank": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    }
   }
 }
