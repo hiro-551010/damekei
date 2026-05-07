@@ -164,6 +164,11 @@
           "multiplier": 2.0
         }
       ]
+    },
+    "skillOverrides": {
+      "R": {
+        "name": "Glacial Storm（1秒あたり）"
+      }
     }
   }
 }
