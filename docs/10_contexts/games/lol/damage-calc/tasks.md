@@ -24,7 +24,7 @@
 | 18 | Alistar | done |
 | 19 | Ambessa | done |
 | 20 | Amumu | done |
-| 21 | Anivia | pending |
+| 21 | Anivia | done |
 | 22 | Annie | pending |
 | 23 | Aphelios | pending |
 | 24 | Ashe | pending |

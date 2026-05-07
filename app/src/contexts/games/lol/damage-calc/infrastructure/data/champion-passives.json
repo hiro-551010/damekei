@@ -155,5 +155,15 @@
         ]
       }
     }
+  },
+  "Anivia": {
+    "skillVariants": {
+      "E": [
+        {
+          "name": "E（凍結対象）",
+          "multiplier": 2.0
+        }
+      ]
+    }
   }
 }
