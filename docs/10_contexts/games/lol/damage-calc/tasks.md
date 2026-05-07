@@ -25,10 +25,10 @@
 | 19 | Ambessa | done |
 | 20 | Amumu | done |
 | 21 | Anivia | done |
-| 22 | Annie | pending |
-| 23 | Aphelios | pending |
-| 24 | Ashe | pending |
-| 25 | AurelionSol | pending |
+| 22 | Annie | done |
+| 23 | Aphelios | done |
+| 24 | Ashe | done |
+| 25 | AurelionSol | done |
 | 26 | Aurora | pending |
 | 27 | Azir | pending |
 | 28 | Bard | pending |
