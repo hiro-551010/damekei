@@ -97,7 +97,7 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
 | フィールド | 型 | 説明 |
 |---|---|---|
 | `id` | `string` | Meraki Analytics のチャンピオン ID（英語、スペースなし） |
-| `name` | `string` | 日本語名 |
+| `name` | `string` | 英語名（Meraki から取得。`nameEn` と同値） |
 | `nameEn` | `string` | 英語名 |
 | `baseStats` | `object` | レベル1時の基礎ステータス |
 | `statGrowth` | `object` | レベルアップごとの成長値 |
@@ -165,7 +165,7 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
 | フィールド | 型 | 説明 |
 |---|---|---|
 | `id` | `number` | Riot ゲームのアイテム ID |
-| `name` | `string` | 日本語名 |
+| `name` | `string` | 英語名（Meraki から取得。`nameEn` と同値） |
 | `nameEn` | `string` | 英語名 |
 | `stats` | `object` | 付与ステータス（該当なしは `null`） |
 | `passives` | `object[]` | ダメージ計算に影響するパッシブ（`domain/model.md` の `ItemPassive` 参照） |
@@ -180,23 +180,12 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
 
 ```json
 {
-  "Aatrox": {
-    "passiveSpec": {
-      "kind": "onHitMaxHpPercent",
-      "percentByLevel": [4.0, 4.39, 4.79, 5.18, 5.58, 5.97, 6.37, 6.76, 7.16, 7.55, 7.95, 8.34, 8.74, 9.13, 9.53, 9.92, 10.32, 10.71],
-      "damageType": "physical"
-    },
+  "<ChampionId>": {
+    "passiveSpec": { ... },
     "skillVariants": {
-      "Q": [{ "name": "スイートスポット", "multiplier": 1.7 }]
+      "Q": [ { "name": "...", "multiplier": 1.0, "damageType": "true" } ]
     },
-    "stateModifiers": [
-      {
-        "kind": "bonusAdFromBaseAd",
-        "name": "R (World Ender)",
-        "triggerSlot": "R",
-        "percentByRank": [20, 30, 40]
-      }
-    ]
+    "stateModifiers": [ { ... } ]
   }
 }
 ```
@@ -207,7 +196,8 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
 | `skillVariants` | `object` | スロット → `SkillVariantSpec[]`。`champion-repository` がスキルにマージ |
 | `stateModifiers` | `object[]` | R 発動等のステート変化（型は `domain/model.md` の `ChampionStateModifier` 参照） |
 
-> `passiveSpec.percentByLevel` の数値の正本は LoL Wiki（`wiki.leagueoflegends.com`）。
+> 各チャンピオンの具体的なデータは `docs/10_contexts/games/lol/damage-calc/data/champions/<id>.md` を参照。
+> 数値の正本は LoL Wiki（`wiki.leagueoflegends.com`）。
 
 ---
 

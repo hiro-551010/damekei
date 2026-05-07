@@ -165,12 +165,19 @@ Meraki Analytics から取得したスキルのダメージ係数。多段ヒッ
 
 ### SkillVariantSpec
 
-スキル内の当たり判定バリアント（例：スイートスポット）。
+スキル内の追加ダメージバリアント（スイートスポット・別型ヒット等）。
 
-| フィールド | 型 | 説明 |
-|---|---|---|
-| `name` | `string` | バリアント名（例: `"スイートスポット"`） |
-| `multiplier` | `number` | ダメージへの乗数（例: `1.7` = +70%） |
+```typescript
+type SkillVariantSpec = {
+  name: string;
+  multiplier: number;       // 親スキルの preMitigation × n。1.0 = 同じ威力
+  damageType?: DamageType;  // 省略時は親スキルと同じ型
+};
+```
+
+> 全てのバリアントは親スキルのダメージ式に乗数をかけることで表現できる。
+> ダメージ種別だけ異なる場合は `damageType` を指定する（例: Ahri Q 復路 → `multiplier: 1.0, damageType: "true"`）。
+> 独立した計算式（異なる base 値・係数）は不要なため `kind` フィールドは持たない。
 
 ### ChampionPassiveSpec
 
