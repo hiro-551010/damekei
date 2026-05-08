@@ -31,7 +31,7 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
 
 ## champions.json
 
-全チャンピオンのデータ。
+全チャンピオンのデータ。スキルは `DamageFormula` 形式の式ツリーで格納する。
 
 ```json
 [
@@ -57,37 +57,61 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
         "slot": "Q",
         "name": "オーブ・オブ・デセプション",
         "damageType": "magic",
-        "baseDamageByRank": [40, 65, 90, 115, 140],
-        "totalAdRatioByRank": [0, 0, 0, 0, 0],
-        "bonusAdRatioByRank": [0, 0, 0, 0, 0],
-        "apRatioByRank": [0.35, 0.35, 0.35, 0.35, 0.35]
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            { "kind": "byRank", "values": [40, 65, 90, 115, 140] },
+            { "kind": "mul", "operands": [
+              { "kind": "stat", "ref": "attacker.ap" },
+              { "kind": "const", "value": 0.35 }
+            ]}
+          ]
+        }
       },
       {
         "slot": "W",
         "name": "フォックスファイア",
         "damageType": "magic",
-        "baseDamageByRank": [60, 90, 120, 150, 180],
-        "totalAdRatioByRank": [0, 0, 0, 0, 0],
-        "bonusAdRatioByRank": [0, 0, 0, 0, 0],
-        "apRatioByRank": [0.4, 0.4, 0.4, 0.4, 0.4]
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            { "kind": "byRank", "values": [60, 90, 120, 150, 180] },
+            { "kind": "mul", "operands": [
+              { "kind": "stat", "ref": "attacker.ap" },
+              { "kind": "const", "value": 0.4 }
+            ]}
+          ]
+        }
       },
       {
         "slot": "E",
         "name": "チャーム",
         "damageType": "magic",
-        "baseDamageByRank": [60, 90, 120, 150, 180],
-        "totalAdRatioByRank": [0, 0, 0, 0, 0],
-        "bonusAdRatioByRank": [0, 0, 0, 0, 0],
-        "apRatioByRank": [0.5, 0.5, 0.5, 0.5, 0.5]
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            { "kind": "byRank", "values": [60, 90, 120, 150, 180] },
+            { "kind": "mul", "operands": [
+              { "kind": "stat", "ref": "attacker.ap" },
+              { "kind": "const", "value": 0.5 }
+            ]}
+          ]
+        }
       },
       {
         "slot": "R",
         "name": "スピリット・ラッシュ",
         "damageType": "magic",
-        "baseDamageByRank": [200, 300, 400],
-        "totalAdRatioByRank": [0, 0, 0],
-        "bonusAdRatioByRank": [0, 0, 0],
-        "apRatioByRank": [0.3, 0.3, 0.3]
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            { "kind": "byRank", "values": [200, 300, 400] },
+            { "kind": "mul", "operands": [
+              { "kind": "stat", "ref": "attacker.ap" },
+              { "kind": "const", "value": 0.3 }
+            ]}
+          ]
+        }
       }
     ]
   }
@@ -102,10 +126,34 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
 | `baseStats` | `object` | レベル1時の基礎ステータス |
 | `statGrowth` | `object` | レベルアップごとの成長値 |
 | `skills` | `object[]` | Q/W/E/R のダメージ係数（スコープ外スキルは含まない） |
-| `skills[].baseDamageByRank` | `number[]` | ランク1〜5（Rは1〜3）の基礎ダメージ合計 |
-| `skills[].totalAdRatioByRank` | `number[]` | ランク別・総AD スケーリング係数 |
-| `skills[].bonusAdRatioByRank` | `number[]` | ランク別・ボーナスAD スケーリング係数 |
-| `skills[].apRatioByRank` | `number[]` | ランク別・AP スケーリング係数 |
+| `skills[].damageFormula` | `DamageFormula` | ダメージ計算式（式ツリー。`domain/types.md` 参照） |
+
+### Ahri Q 復路バリアント（SkillVariantSpec の formula 使用例）
+
+`champion-passives.json` に以下のように記述する。バリアントは独立した `formula` を持つ。
+
+```json
+{
+  "Ahri": {
+    "skillVariants": {
+      "Q": [{
+        "name": "Q（復路：真のダメージ）",
+        "formula": {
+          "kind": "add",
+          "operands": [
+            { "kind": "byRank", "values": [40, 65, 90, 115, 140] },
+            { "kind": "mul", "operands": [
+              { "kind": "stat", "ref": "attacker.ap" },
+              { "kind": "const", "value": 0.35 }
+            ]}
+          ]
+        },
+        "damageType": "true"
+      }]
+    }
+  }
+}
+```
 
 ---
 
@@ -183,7 +231,7 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
   "<ChampionId>": {
     "passiveSpec": { ... },
     "skillVariants": {
-      "Q": [ { "name": "...", "multiplier": 1.0, "damageType": "true" } ]
+      "Q": [ { "name": "...", "formula": { ... }, "damageType": "true" } ]
     },
     "stateModifiers": [ { ... } ]
   }
@@ -196,8 +244,165 @@ app/src/contexts/games/lol/damage-calc/infrastructure/data/
 | `skillVariants` | `object` | スロット → `SkillVariantSpec[]`。`champion-repository` がスキルにマージ |
 | `stateModifiers` | `object[]` | R 発動等のステート変化（型は `domain/model.md` の `ChampionStateModifier` 参照） |
 
+### Aatrox のパッシブ（onHitDamage 使用例）
+
+```json
+{
+  "Aatrox": {
+    "passiveSpec": {
+      "kind": "onHitDamage",
+      "formula": {
+        "kind": "mul",
+        "operands": [
+          { "kind": "stat", "ref": "defender.maxHp" },
+          { "kind": "byLevel", "values": [0.04, 0.04, 0.04, 0.04, 0.04, 0.04, 0.05, 0.05, 0.05, 0.05, 0.05, 0.06, 0.06, 0.06, 0.07, 0.07, 0.07, 0.10] }
+        ]
+      },
+      "damageType": "magic"
+    }
+  }
+}
+```
+
 > 各チャンピオンの具体的なデータは `docs/10_contexts/games/lol/damage-calc/data/champions/<id>.md` を参照。
 > 数値の正本は LoL Wiki（`wiki.leagueoflegends.com`）。
+
+---
+
+## マイグレーション戦略（既存データの自動変換）
+
+`fetch-lol-data.ts` の変換ロジックが Meraki の線形スケーリングを `DamageFormula` の `add/mul` ノードに変換する。
+
+### パターン1: 全スケーリングがゼロ（baseDamage のみ）
+
+```json
+// 変換前（旧スキーマ）
+{ "baseDamageByRank": [100, 150, 200, 250, 300], "totalAdRatioByRank": [0,0,0,0,0], ... }
+
+// 変換後（新スキーマ）
+{ "damageFormula": { "kind": "byRank", "values": [100, 150, 200, 250, 300] } }
+```
+
+### パターン2: baseDamage + 単一スケーリング（add + mul）
+
+```json
+// 変換前（旧スキーマ）
+{ "baseDamageByRank": [40, 65, 90, 115, 140], "apRatioByRank": [0.35, 0.35, 0.35, 0.35, 0.35], ... }
+
+// 変換後（新スキーマ）
+{
+  "damageFormula": {
+    "kind": "add",
+    "operands": [
+      { "kind": "byRank", "values": [40, 65, 90, 115, 140] },
+      { "kind": "mul", "operands": [
+        { "kind": "stat", "ref": "attacker.ap" },
+        { "kind": "byRank", "values": [0.35, 0.35, 0.35, 0.35, 0.35] }
+      ]}
+    ]
+  }
+}
+```
+
+`byRank` の全要素が同じ場合（固定係数）は `const` に圧縮する:
+```json
+{ "kind": "mul", "operands": [
+  { "kind": "stat", "ref": "attacker.ap" },
+  { "kind": "const", "value": 0.35 }
+]}
+```
+
+### パターン3: 複数スケーリング（add の operands に複数の mul）
+
+```json
+// 変換前（旧スキーマ）
+{ "baseDamageByRank": [10,30,50,70,90], "totalAdRatioByRank": [0.6,0.7,0.8,0.9,1.0], "apRatioByRank": [0.3,0.3,0.3,0.3,0.3] }
+
+// 変換後（新スキーマ）
+{
+  "damageFormula": {
+    "kind": "add",
+    "operands": [
+      { "kind": "byRank", "values": [10, 30, 50, 70, 90] },
+      { "kind": "mul", "operands": [
+        { "kind": "stat", "ref": "attacker.totalAd" },
+        { "kind": "byRank", "values": [0.6, 0.7, 0.8, 0.9, 1.0] }
+      ]},
+      { "kind": "mul", "operands": [
+        { "kind": "stat", "ref": "attacker.ap" },
+        { "kind": "const", "value": 0.3 }
+      ]}
+    ]
+  }
+}
+```
+
+---
+
+## サンプル検証（新スキーマ）
+
+以下のチャンピオンを例示して新スキーマの表現力を検証する。
+
+### Aatrox Q（線形: base + totalAd）
+
+```json
+{
+  "slot": "Q",
+  "name": "ダーキン・ブレード",
+  "damageType": "physical",
+  "damageFormula": {
+    "kind": "add",
+    "operands": [
+      { "kind": "byRank", "values": [10, 30, 50, 70, 90] },
+      { "kind": "mul", "operands": [
+        { "kind": "stat", "ref": "attacker.totalAd" },
+        { "kind": "byRank", "values": [0.6, 0.7, 0.8, 0.9, 1.0] }
+      ]}
+    ]
+  }
+}
+```
+
+### Vayne W（最大HP% 真のダメージ）
+
+Vayne W は AA パッシブではなくスキルとしてモデル化する。`damageType: "true"` を設定。
+
+```json
+{
+  "slot": "W",
+  "name": "シルバー・ボルト",
+  "damageType": "true",
+  "damageFormula": {
+    "kind": "mul",
+    "operands": [
+      { "kind": "stat", "ref": "defender.maxHp" },
+      { "kind": "byRank", "values": [0.04, 0.055, 0.07, 0.085, 0.10] }
+    ]
+  }
+}
+```
+
+> フェーズ1時点ではスキーマ定義のみ。実データへの適用はフェーズ3で実施する（データ収集が必要）。
+
+### Anivia R（DoT 1秒あたり: base + ap）
+
+```json
+{
+  "slot": "R",
+  "name": "グレイシャル・ストーム（1秒あたり）",
+  "damageType": "magic",
+  "damageFormula": {
+    "kind": "add",
+    "operands": [
+      { "kind": "byRank", "values": [60, 85, 110] },
+      { "kind": "mul", "operands": [
+        { "kind": "stat", "ref": "attacker.ap" },
+        { "kind": "const", "value": 0.25 }
+      ]}
+    ]
+  }
+}
+```
 
 ---
 
