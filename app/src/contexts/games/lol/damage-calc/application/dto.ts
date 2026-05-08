@@ -55,12 +55,14 @@ export type AttackerInputDto = {
   level: number;
   itemIds: number[];
   skillAllocation: SkillAllocationDto;
+  stackCount?: number;
 };
 
 export type DefenderInputDto = {
   championId: string;
   level: number;
   itemIds: number[];
+  hpPercent?: number;
 };
 
 export type SkillVariantResultDto = {

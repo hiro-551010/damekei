@@ -14,8 +14,14 @@ function resolveStat(ref: StatRef, context: EvaluationContext): number {
     case "attacker.maxHp": return context.attacker.hp;
     case "attacker.stackCount": return context.stackCount ?? 0;
     case "defender.maxHp": return context.defender.hp;
-    case "defender.currentHp": return context.defender.hp;
-    case "defender.missingHp": return 0;
+    case "defender.currentHp": {
+      const pct = (context.defenderHpPercent ?? 100) / 100;
+      return context.defender.hp * pct;
+    }
+    case "defender.missingHp": {
+      const pct = (context.defenderHpPercent ?? 100) / 100;
+      return context.defender.hp * (1 - pct);
+    }
     case "defender.armor": return context.defender.armor;
     case "defender.magicResist": return context.defender.magicResist;
   }

@@ -73,7 +73,10 @@ export function createUseCases(
       skillAllocation: { q: 0, w: 0, e: 0, r: 0 },
     };
 
-    const result = calculateDamage(attacker, defender);
+    const result = calculateDamage(attacker, defender, {
+      stackCount: attackerInput.stackCount,
+      defenderHpPercent: defenderInput.hpPercent,
+    });
     return result;
   }
 

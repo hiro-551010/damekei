@@ -26,8 +26,8 @@ function skillRank(slot: SkillSlot, alloc: Champion["skillAllocation"]): number 
   return alloc[slot.toLowerCase() as "q" | "w" | "e" | "r"];
 }
 
-function buildContext(atkStats: ComputedStats, defStats: ComputedStats, rank: number, level: number, stackCount?: number): EvaluationContext {
-  return { attacker: atkStats, defender: defStats, skillRank: rank, championLevel: level, stackCount };
+function buildContext(atkStats: ComputedStats, defStats: ComputedStats, rank: number, level: number, stackCount?: number, defenderHpPercent?: number): EvaluationContext {
+  return { attacker: atkStats, defender: defStats, skillRank: rank, championLevel: level, stackCount, defenderHpPercent };
 }
 
 function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defStats: ComputedStats): AutoAttackResult {
@@ -111,6 +111,7 @@ function calculateSkills(
   attacker: Champion,
   atkStats: ComputedStats,
   defStats: ComputedStats,
+  options?: CalculateOptions,
 ): SkillDamageResult[] {
   return attacker.species.skills.flatMap((spec) => {
     const rank = skillRank(spec.slot, attacker.skillAllocation);
@@ -128,7 +129,7 @@ function calculateSkills(
       }];
     }
 
-    const context = buildContext(atkStats, defStats, rank, attacker.level);
+    const context = buildContext(atkStats, defStats, rank, attacker.level, options?.stackCount, options?.defenderHpPercent);
     const preMitigation = evaluate(spec.damageFormula, context);
 
     if (preMitigation === 0) {
@@ -200,12 +201,13 @@ function calculateChampionPassiveAA(
   attacker: Champion,
   atkStats: ComputedStats,
   defStats: ComputedStats,
+  options?: CalculateOptions,
 ): ChampionPassiveAAResult | undefined {
   const spec = attacker.species.passiveSpec;
   if (!spec) return undefined;
 
   if (spec.kind === "onHitDamage") {
-    const context = buildContext(atkStats, defStats, 1, attacker.level);
+    const context = buildContext(atkStats, defStats, 1, attacker.level, undefined, options?.defenderHpPercent);
     const preMit = evaluate(spec.formula, context);
 
     let effRes: number;
@@ -246,13 +248,18 @@ function applyStateModifier(stats: ComputedStats, modifier: NonNullable<Champion
   return result;
 }
 
-export function calculateDamage(attacker: Champion, defender: Champion): DamageResult {
+type CalculateOptions = {
+  stackCount?: number;
+  defenderHpPercent?: number;
+};
+
+export function calculateDamage(attacker: Champion, defender: Champion, options?: CalculateOptions): DamageResult {
   const atkStats = computeStats(attacker);
   const defStats = computeStats(defender);
 
   const autoAttack = calculateAutoAttack(attacker, atkStats, defStats);
-  const skills = calculateSkills(attacker, atkStats, defStats);
-  const championPassiveAA = calculateChampionPassiveAA(attacker, atkStats, defStats);
+  const skills = calculateSkills(attacker, atkStats, defStats, options);
+  const championPassiveAA = calculateChampionPassiveAA(attacker, atkStats, defStats, options);
 
   const stateResults: ChampionStateResult[] = [];
   for (const modifier of attacker.species.stateModifiers ?? []) {
@@ -265,7 +272,7 @@ export function calculateDamage(attacker: Champion, defender: Champion): DamageR
       stateName: modifier.name,
       rank,
       autoAttack: calculateAutoAttack(attacker, modifiedAtkStats, defStats),
-      skills: calculateSkills(attacker, modifiedAtkStats, defStats),
+      skills: calculateSkills(attacker, modifiedAtkStats, defStats, options),
       ...(championPassiveAA && { championPassiveAA }),
     });
   }

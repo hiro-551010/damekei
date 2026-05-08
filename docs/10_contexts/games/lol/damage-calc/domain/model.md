@@ -281,6 +281,7 @@ type ChampionStateModifier = {
 | `armor` | `number` |
 | `magicResist` | `number` |
 | `attackSpeed` | `number` |
+| `moveSpeed` | `number` |
 
 ### ChampionStatGrowth
 

@@ -15,7 +15,9 @@ type Props = {
     skillAllocation: SkillAllocationDto,
     defenderChampionId: string,
     defenderLevel: number,
-    defenderItemIds: number[]
+    defenderItemIds: number[],
+    attackerStackCount?: number,
+    defenderHpPercent?: number
   ) => Promise<CalculateDamageResultDto>;
 };
 
@@ -32,6 +34,8 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
   const [defChampion, setDefChampion] = useState<string | null>(null);
   const [defLevel, setDefLevel] = useState(1);
   const [defItems, setDefItems] = useState<number[]>([]);
+  const [atkStackCount, setAtkStackCount] = useState<number>(0);
+  const [defHpPercent, setDefHpPercent] = useState<number>(100);
 
   const [results, setResults] = useState<CalculateDamageResultDto | null>(null);
   // null = no champions selected; array = calculation result (may contain zero-damage skills)
@@ -56,10 +60,10 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
       return;
     }
     setError(null);
-    onCalculate(atkChampion, atkLevel, atkItems, atkAlloc, defChampion, defLevel, defItems)
+    onCalculate(atkChampion, atkLevel, atkItems, atkAlloc, defChampion, defLevel, defItems, atkStackCount, defHpPercent)
       .then(setResults)
       .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
-  }, [atkChampion, atkLevel, atkItems, atkAlloc, defChampion, defLevel, defItems, onCalculate]);
+  }, [atkChampion, atkLevel, atkItems, atkAlloc, defChampion, defLevel, defItems, atkStackCount, defHpPercent, onCalculate]);
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-6">
@@ -78,6 +82,8 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
           onLevelChange={setAtkLevel}
           onItemsChange={setAtkItems}
           onSkillAllocationChange={setAtkAlloc}
+          stackCount={atkStackCount}
+          onStackCountChange={setAtkStackCount}
         />
         <ChampionPanel
           title="防御側"
@@ -89,6 +95,8 @@ export function LolDamageCalcPage({ champions, items, onCalculate }: Props) {
           onChampionChange={setDefChampion}
           onLevelChange={setDefLevel}
           onItemsChange={setDefItems}
+          hpPercent={defHpPercent}
+          onHpPercentChange={setDefHpPercent}
         />
       </div>
 

@@ -42,6 +42,7 @@ function species(skills: SkillDamageSpec[], armor = BASE_ARMOR, magicResist = BA
       armor,
       magicResist,
       attackSpeed: 0.625,
+      moveSpeed: 325,
     },
     statGrowth: {
       hp: 0,
@@ -470,7 +471,7 @@ describe('Aatrox 固有ロジック', () => {
       id: 'Aatrox',
       name: 'アートロックス',
       nameEn: 'Aatrox',
-      baseStats: { hp: 650, ad: 60, armor: 38, magicResist: 32, attackSpeed: 0.651 },
+      baseStats: { hp: 650, ad: 60, armor: 38, magicResist: 32, attackSpeed: 0.651, moveSpeed: 330 },
       statGrowth: { hp: 0, ad: 0, armor: 0, magicResist: 0 },
       skills: [
         {
