@@ -2,28 +2,52 @@
 
 ## champion-passives.json エントリ
 
-なし（Meraki データをそのまま使用）。
+```json
+{
+  "KogMaw": {
+    "skillOverrides": {
+      "W": {
+        "name": "Bio-Arcane Barrage（オンヒット）",
+        "damageType": "magic",
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            {
+              "kind": "mul",
+              "operands": [
+                { "kind": "stat", "ref": "defender.maxHp" },
+                { "kind": "byRank", "values": [0.03, 0.0375, 0.045, 0.0525, 0.06] }
+              ]
+            },
+            {
+              "kind": "mul",
+              "operands": [
+                { "kind": "stat", "ref": "attacker.ap" },
+                { "kind": "const", "value": 0.015 }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+## 各フィールドの根拠
+
+- W（Bio-Arcane Barrage）: トグル中の AA に防御側最大HP の 3/3.75/4.5/5.25/6% + AP×1.5% の魔法ダメージを追加。  
+  LoL Wiki 確認値。AP スケーリングは 1.5% per 100 AP = 0.015 per 1 AP。  
+  Meraki は W の `baseDamageByRank` を空（`[]`）で返すため、`skillOverrides.W` で formula を完全上書きする。
 
 ## 各スキルの扱い
 
 | スキル | 扱い |
 |---|---|
 | Q（Caustic Spittle） | magic。Meraki 値をそのまま使用 |
-| W（Bio-Arcane Barrage） | magic。トグル中の AA オンヒット最大 HP% ダメージ値を Meraki が返す |
+| W（Bio-Arcane Barrage） | magic。skillOverrides で 最大HP% + AP スケーリング formula を設定 |
 | E（Void Ooze） | magic。Meraki 値をそのまま使用 |
 | R（Living Artillery） | magic。Meraki 値をそのまま使用 |
-
-## 要確認
-
-| 項目 | 懸念点 |
-|---|---|
-| W ダメージ値 | W はトグルで AA に最大 HP の 3.5〜7.5%（+ AP 比率）の on-hit magic を追加する。Meraki がこの HP% 値をどのフィールドで返すかを確認すること |
-
-## 既知の制限
-
-| 項目 | 内容 |
-|---|---|
-| W オンヒット最大 HP% | W の on-hit magic ダメージは最大 HP% + AP スケーリングのトグルスキル。`passiveSpec` の `onHitMaxHpPercent` は永続パッシブ・レベル配列前提のため、トグル＋ AP スケーリングには対応しない |
 
 ## 対象外
 
