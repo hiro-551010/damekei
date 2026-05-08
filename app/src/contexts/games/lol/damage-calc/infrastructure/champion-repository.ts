@@ -16,14 +16,26 @@ type ChampionPassiveEntry = {
 
 const passivesMap = championPassivesData as Record<string, ChampionPassiveEntry>;
 
-const champions: ChampionSpecies[] = (championsData as ChampionSpecies[]).map((c) => {
+const champions: ChampionSpecies[] = (championsData as unknown as ChampionSpecies[]).map((c) => {
   const entry = passivesMap[c.id];
   if (!entry) return c;
 
   const skills = c.skills.map((skill) => {
     const override = entry.skillOverrides?.[skill.slot];
-    const variants = entry.skillVariants?.[skill.slot];
-    return { ...skill, ...(override ?? {}), ...(variants ? { variants } : {}) };
+    const variantSpecs = entry.skillVariants?.[skill.slot];
+    const mergedSkill = { ...skill, ...(override ?? {}) };
+
+    const variants: SkillVariantSpec[] | undefined = variantSpecs?.map((v) => {
+      if (!v.formula && v.multiplier !== undefined) {
+        return {
+          ...v,
+          formula: { kind: "mul" as const, operands: [mergedSkill.damageFormula, { kind: "const" as const, value: v.multiplier }] },
+        };
+      }
+      return v;
+    });
+
+    return { ...mergedSkill, ...(variants ? { variants } : {}) };
   });
 
   return {

@@ -154,31 +154,28 @@ Meraki Analytics から取得したスキルのダメージ係数。多段ヒッ
 | `slot` | `SkillSlot` | Q / W / E / R |
 | `name` | `string` | スキル名 |
 | `damageType` | `DamageType` | ダメージ種別 |
-| `baseDamageByRank` | `number[]` | ランク別基礎ダメージ合計（rank 1〜5、Rは1〜3） |
-| `totalAdRatioByRank` | `number[]` | ランク別・総AD スケーリング係数 |
-| `bonusAdRatioByRank` | `number[]` | ランク別・ボーナスAD スケーリング係数 |
-| `apRatioByRank` | `number[]` | ランク別・AP スケーリング係数 |
+| `damageFormula` | `DamageFormula` | ダメージ計算式（式ツリー） |
 | `variants` | `SkillVariantSpec[] \| undefined` | スキル内バリアント（スイートスポット等）|
 
-> ランク別配列の例: `bonusAdRatioByRank: [1.20, 1.45, 1.70, 1.95, 2.20]` = ランク1で120%、ランク5で220%。
-> 固定値のスキルは全要素が同じ値の配列になる（例: `[0.4, 0.4, 0.4, 0.4, 0.4]`）。
+> `damageFormula` は線形スケーリング（`add` / `mul` / `byRank` / `stat`）から HP% スケーリング
+> まで任意の計算式を表現できる。Meraki のデータ変換は `fetch-lol-data.ts` の変換ロジックが担う。
 > Meraki に "Total" / "Maximum" 属性がある場合はそれを優先し、ない場合は1ヒット分の値をそのまま使う。
 
 ### SkillVariantSpec
 
 スキル内の追加ダメージバリアント（スイートスポット・別型ヒット等）。
+バリアントは親スキルとは独立した計算式（`DamageFormula`）を持つ。
 
 ```typescript
 type SkillVariantSpec = {
   name: string;
-  multiplier: number;       // 親スキルの preMitigation × n。1.0 = 同じ威力
-  damageType?: DamageType;  // 省略時は親スキルと同じ型
+  formula: DamageFormula;  // 独立した計算式（乗数ではなく完全な式）
+  damageType?: DamageType; // 省略時は親スキルと同じ型
 };
 ```
 
-> 全てのバリアントは親スキルのダメージ式に乗数をかけることで表現できる。
-> ダメージ種別だけ異なる場合は `damageType` を指定する（例: Ahri Q 復路 → `multiplier: 1.0, damageType: "true"`）。
-> 独立した計算式（異なる base 値・係数）は不要なため `kind` フィールドは持たない。
+> バリアントが親スキルと同じ計算式・同じダメージ種別の場合でも、明示的に `formula` を持つ。
+> ダメージ種別だけ異なる場合は `damageType` を指定する（例: Ahri Q 復路 → `damageType: "true"`）。
 
 ### AACritOverride
 
@@ -196,15 +193,44 @@ type AACritOverride = {
 
 ### ChampionPassiveSpec
 
-チャンピオン固有パッシブのダメージ定義。
+チャンピオン固有パッシブのダメージ定義。`DamageFormula` を使った汎用形。
 
 ```typescript
 type ChampionPassiveSpec =
-  | { kind: "onHitMaxHpPercent"; percentByLevel: number[]; damageType: DamageType }
+  | { kind: "onHitDamage"; formula: DamageFormula; damageType: DamageType }
 ```
 
-> `percentByLevel` の数値は LoL Wiki から取得し `champion-passives.json` に収録する。
-> `champion-repository` がロード時にマージする（`item-passives.json` と同じ運用）。
+> `onHitDamage` は AA ヒット時に発動するパッシブダメージを表す。
+> `formula` に任意の `DamageFormula` を指定できる。
+>
+> 例: 最大HP% オンヒット（旧 `onHitMaxHpPercent`）は以下のように表現する:
+> ```json
+> {
+>   "kind": "onHitDamage",
+>   "formula": {
+>     "kind": "mul",
+>     "operands": [
+>       { "kind": "stat", "ref": "defender.maxHp" },
+>       { "kind": "byLevel", "values": [0.04, 0.04, ..., 0.10] }
+>     ]
+>   },
+>   "damageType": "magic"
+> }
+> ```
+>
+> 数値の正本は LoL Wiki（`wiki.leagueoflegends.com`）。
+> `champion-repository` がロード時に `champion-passives.json` からマージする（`item-passives.json` と同じ運用）。
+
+### StatModifier
+
+`ChampionStateModifier` で使用するステータス変化の定義。
+
+```typescript
+type StatModifier = {
+  stat: StatRef;           // 変更するステータス
+  addFormula: DamageFormula;  // 加算値の計算式
+};
+```
 
 ### ChampionStateModifier
 
@@ -212,14 +238,31 @@ type ChampionPassiveSpec =
 
 ```typescript
 type ChampionStateModifier = {
-  kind: "bonusAdFromBaseAd";
   name: string;
   triggerSlot: SkillSlot;
-  percentByRank: number[];
+  statModifiers: StatModifier[];
 };
 ```
 
 > `triggerSlot` のスキルランクが 0（未習得）の場合は、対応するステート結果を非表示にする。
+>
+> 例: bonusAd を基礎AD比率で加算する場合（旧 `bonusAdFromBaseAd`）:
+> ```json
+> {
+>   "name": "パッシブ名",
+>   "triggerSlot": "R",
+>   "statModifiers": [{
+>     "stat": "attacker.bonusAd",
+>     "addFormula": {
+>       "kind": "mul",
+>       "operands": [
+>         { "kind": "stat", "ref": "attacker.baseAd" },
+>         { "kind": "byRank", "values": [0.30, 0.45, 0.60, 0.75, 0.90] }
+>       ]
+>     }
+>   }]
+> }
+> ```
 
 ### DamageType
 
@@ -238,6 +281,7 @@ type ChampionStateModifier = {
 | `armor` | `number` |
 | `magicResist` | `number` |
 | `attackSpeed` | `number` |
+| `moveSpeed` | `number` |
 
 ### ChampionStatGrowth
 
@@ -262,8 +306,12 @@ type ChampionStateModifier = {
 | `bonusAd` | `number` | ボーナスAD（アイテム由来のみ） |
 | `ap` | `number` | 魔力 |
 | `armor` | `number` | 総防御力 |
+| `bonusArmor` | `number` | アイテム由来のアーマー（`armor - armor_at_level`） |
 | `magicResist` | `number` | 総魔法耐性 |
+| `bonusMagicResist` | `number` | アイテム由来のMR（`magicResist - mr_at_level`） |
 | `hp` | `number` | 最大HP |
+| `moveSpeed` | `number` | 移動速度（基礎移動速度 + アイテムボーナス） |
+| `bonusMoveSpeed` | `number` | アイテム由来の移動速度 |
 | `lethality` | `number` | 総Lethality |
 | `armorPenPercent` | `number` | 総物理貫通%（0〜100） |
 | `magicPenFlat` | `number` | 総魔法貫通（固定値） |

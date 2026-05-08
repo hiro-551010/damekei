@@ -10,10 +10,12 @@ export async function calculateLolDamage(
   skillAllocation: SkillAllocationDto,
   defenderChampionId: string,
   defenderLevel: number,
-  defenderItemIds: number[]
+  defenderItemIds: number[],
+  attackerStackCount?: number,
+  defenderHpPercent?: number
 ): Promise<CalculateDamageResultDto> {
   return lolDamageCalcUseCases.calculateDamage(
-    { championId: attackerChampionId, level: attackerLevel, itemIds: attackerItemIds, skillAllocation },
-    { championId: defenderChampionId, level: defenderLevel, itemIds: defenderItemIds }
+    { championId: attackerChampionId, level: attackerLevel, itemIds: attackerItemIds, skillAllocation, stackCount: attackerStackCount },
+    { championId: defenderChampionId, level: defenderLevel, itemIds: defenderItemIds, hpPercent: defenderHpPercent }
   );
 }

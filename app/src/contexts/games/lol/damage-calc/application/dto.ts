@@ -1,4 +1,4 @@
-import { DamageType, SkillSlot } from "../domain/types";
+import { DamageFormula, DamageType, SkillSlot } from "../domain/types";
 
 export type ChampionSummaryDto = {
   id: string;
@@ -10,10 +10,7 @@ export type SkillDamageSpecDto = {
   slot: SkillSlot;
   name: string;
   damageType: DamageType;
-  baseDamageByRank: number[];
-  totalAdRatioByRank: number[];
-  bonusAdRatioByRank: number[];
-  apRatioByRank: number[];
+  damageFormula: DamageFormula;
 };
 
 export type ChampionDetailDto = {
@@ -58,12 +55,14 @@ export type AttackerInputDto = {
   level: number;
   itemIds: number[];
   skillAllocation: SkillAllocationDto;
+  stackCount?: number;
 };
 
 export type DefenderInputDto = {
   championId: string;
   level: number;
   itemIds: number[];
+  hpPercent?: number;
 };
 
 export type SkillVariantResultDto = {

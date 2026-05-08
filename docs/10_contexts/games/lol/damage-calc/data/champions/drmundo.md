@@ -2,24 +2,45 @@
 
 ## champion-passives.json エントリ
 
-なし（Meraki データをそのまま使用）。
+```json
+{
+  "DrMundo": {
+    "skillOverrides": {
+      "Q": {
+        "name": "Infected Bonesaw",
+        "damageType": "magic",
+        "damageFormula": {
+          "kind": "mul",
+          "operands": [
+            { "kind": "stat", "ref": "defender.currentHp" },
+            { "kind": "byRank", "values": [0.20, 0.225, 0.25, 0.275, 0.30] }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+## 各フィールドの根拠
+
+- Q（Infected Bonesaw）: 防御側現在 HP の 20/22.5/25/27.5/30% 魔法ダメージ（最小 80/130/180/230/280）。  
+  LoL Wiki 確認値。Meraki は最小ダメージ値（80/130/180/230/280）を `baseDamageByRank` として返している。  
+  チャンピオン戦では現在 HP% 計算が支配的なため、`skillOverrides.Q` で formula を上書きする。  
+  最小ダメージ保証（clamp ノード）は実装を複雑化させるため省略する。
 
 ## 各スキルの扱い
 
 | スキル | 扱い |
 |---|---|
-| Q（Infected Bonesaw） | magic。現在 HP% ベースのダメージ。Meraki が返す値の意味を要確認 |
-| W（Heart Zapper） | magic。継続ダメージを Meraki が返す |
-| E（Blunt Force Trauma） | physical。最大 HP 連動のボーナス AD を含んだ強化 AA のダメージ値を Meraki が返す |
+| Q（Infected Bonesaw） | magic。skillOverrides: 防御側現在HP 20/22.5/25/27.5/30% 魔法ダメージ |
+| W（Heart Zapper） | magic。Meraki 値をそのまま使用 |
+| E（Blunt Force Trauma） | physical。Meraki 値をそのまま使用 |
 | R（Maximum Dosage） | ダメージなし（自己バフ・回復）。preMitigation = 0 で問題なし |
 
-## 要確認
+## 既知の制限
 
-| 項目 | 懸念点 |
-|---|---|
-| Q ダメージ値 | Q のダメージは「現在 HP の 20〜30%」魔法ダメージだが、Meraki の標準フォーマット（baseDamage + ratios）では HP% スケーリングを表現できない。Meraki が返す値が何を意味するか（空値・固定値・近似値）を確認すること |
-| W ダメージ値 | W は継続ダメージ（duration 中に自分の最大 HP% を消費しながらダメージを与える）。Meraki が全継続合計か1秒あたりかを確認すること |
-| E ダメージ値 | E パッシブは「最大 HP × 割合」のボーナス AD を付与するが、Meraki がこれを bonusAdRatio に正しく変換しているか確認すること |
+- Q の最小ダメージ保証（80/130/180/230/280）は clamp ノード未対応のため反映されない
 
 ## 対象外
 

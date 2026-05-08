@@ -1,27 +1,14 @@
 {
   "Aatrox": {
     "passiveSpec": {
-      "kind": "onHitMaxHpPercent",
-      "percentByLevel": [
-        4.0,
-        4.39,
-        4.79,
-        5.18,
-        5.58,
-        5.97,
-        6.37,
-        6.76,
-        7.16,
-        7.55,
-        7.95,
-        8.34,
-        8.74,
-        9.13,
-        9.53,
-        9.92,
-        10.32,
-        10.71
-      ],
+      "kind": "onHitDamage",
+      "formula": {
+        "kind": "mul",
+        "operands": [
+          { "kind": "stat", "ref": "defender.maxHp" },
+          { "kind": "byLevel", "values": [0.04, 0.0439, 0.0479, 0.0518, 0.0558, 0.0597, 0.0637, 0.0676, 0.0716, 0.0755, 0.0795, 0.0834, 0.0874, 0.0913, 0.0953, 0.0992, 0.1032, 0.1071] }
+        ]
+      },
       "damageType": "physical"
     },
     "skillVariants": {
@@ -34,13 +21,19 @@
     },
     "stateModifiers": [
       {
-        "kind": "bonusAdFromBaseAd",
         "name": "R (World Ender)",
         "triggerSlot": "R",
-        "percentByRank": [
-          20,
-          30,
-          40
+        "statModifiers": [
+          {
+            "stat": "attacker.bonusAd",
+            "addFormula": {
+              "kind": "mul",
+              "operands": [
+                { "kind": "stat", "ref": "attacker.baseAd" },
+                { "kind": "byRank", "values": [0.20, 0.30, 0.40] }
+              ]
+            }
+          }
         ]
       }
     ]
@@ -50,34 +43,16 @@
       "Q": {
         "name": "オーブ・オブ・デセプション",
         "damageType": "magic",
-        "baseDamageByRank": [
-          40,
-          65,
-          90,
-          115,
-          140
-        ],
-        "totalAdRatioByRank": [
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "bonusAdRatioByRank": [
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "apRatioByRank": [
-          0.35,
-          0.35,
-          0.35,
-          0.35,
-          0.35
-        ],
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            { "kind": "byRank", "values": [40, 65, 90, 115, 140] },
+            { "kind": "mul", "operands": [
+              { "kind": "stat", "ref": "attacker.ap" },
+              { "kind": "const", "value": 0.35 }
+            ]}
+          ]
+        },
         "variants": [
           {
             "name": "Q（復路・真ダメージ）",
@@ -93,66 +68,12 @@
       "W": {
         "name": "デスペア",
         "damageType": "magic",
-        "baseDamageByRank": [
-          10,
-          15,
-          20,
-          25,
-          30
-        ],
-        "totalAdRatioByRank": [
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "bonusAdRatioByRank": [
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "apRatioByRank": [
-          0,
-          0,
-          0,
-          0,
-          0
-        ]
+        "damageFormula": { "kind": "byRank", "values": [10, 15, 20, 25, 30] }
       },
       "E": {
         "name": "タントラム",
         "damageType": "magic",
-        "baseDamageByRank": [
-          75,
-          100,
-          125,
-          150,
-          175
-        ],
-        "totalAdRatioByRank": [
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "bonusAdRatioByRank": [
-          0,
-          0,
-          0,
-          0,
-          0
-        ],
-        "apRatioByRank": [
-          0,
-          0,
-          0,
-          0,
-          0
-        ]
+        "damageFormula": { "kind": "byRank", "values": [75, 100, 125, 150, 175] }
       }
     }
   },
@@ -175,6 +96,112 @@
     "aaCritOverride": {
       "alwaysCrit": true,
       "baseMultiplier": 1.10
+    }
+  },
+  "DrMundo": {
+    "skillOverrides": {
+      "Q": {
+        "name": "Infected Bonesaw",
+        "damageType": "magic",
+        "damageFormula": {
+          "kind": "mul",
+          "operands": [
+            { "kind": "stat", "ref": "defender.currentHp" },
+            { "kind": "byRank", "values": [0.20, 0.225, 0.25, 0.275, 0.30] }
+          ]
+        }
+      }
+    }
+  },
+  "KogMaw": {
+    "skillOverrides": {
+      "W": {
+        "name": "Bio-Arcane Barrage（オンヒット）",
+        "damageType": "magic",
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            {
+              "kind": "mul",
+              "operands": [
+                { "kind": "stat", "ref": "defender.maxHp" },
+                { "kind": "byRank", "values": [0.03, 0.0375, 0.045, 0.0525, 0.06] }
+              ]
+            },
+            {
+              "kind": "mul",
+              "operands": [
+                { "kind": "stat", "ref": "attacker.ap" },
+                { "kind": "const", "value": 0.015 }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Nasus": {
+    "skillOverrides": {
+      "Q": {
+        "name": "Siphoning Strike",
+        "damageType": "physical",
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            { "kind": "byRank", "values": [35, 55, 75, 95, 115] },
+            { "kind": "stat", "ref": "attacker.stackCount" }
+          ]
+        }
+      }
+    }
+  },
+  "Vayne": {
+    "skillOverrides": {
+      "W": {
+        "name": "Silver Bolts（3ヒット目）",
+        "damageType": "true",
+        "damageFormula": {
+          "kind": "mul",
+          "operands": [
+            { "kind": "stat", "ref": "defender.maxHp" },
+            { "kind": "byRank", "values": [0.06, 0.07, 0.08, 0.09, 0.10] }
+          ]
+        }
+      }
+    }
+  },
+  "Viego": {
+    "skillOverrides": {
+      "Q": {
+        "name": "Blade of the Ruined King（パッシブ on-hit）",
+        "damageType": "physical",
+        "damageFormula": {
+          "kind": "mul",
+          "operands": [
+            { "kind": "stat", "ref": "defender.currentHp" },
+            { "kind": "byRank", "values": [0.02, 0.03, 0.04, 0.05, 0.06] }
+          ]
+        }
+      }
+    }
+  },
+  "Yone": {
+    "aaCritOverride": {
+      "alwaysCrit": false,
+      "baseMultiplier": 1.5
+    },
+    "skillOverrides": {
+      "W": {
+        "name": "Spirit Cleave（魔法ダメージ成分）",
+        "damageType": "magic",
+        "damageFormula": {
+          "kind": "mul",
+          "operands": [
+            { "kind": "stat", "ref": "defender.maxHp" },
+            { "kind": "byRank", "values": [0.04, 0.045, 0.05, 0.055, 0.06] }
+          ]
+        }
+      }
     }
   }
 }

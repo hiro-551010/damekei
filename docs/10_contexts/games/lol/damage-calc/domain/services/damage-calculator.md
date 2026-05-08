@@ -15,7 +15,9 @@ function calculateDamage(attacker: Champion, defender: Champion): DamageResult
 1. `computeStats(attacker)` / `computeStats(defender)` で最終ステータスを算出
 2. 攻撃側の各スキルに対して以下を計算：
    - rank = 0（未習得）の場合、全値 0 で返す
-   - `preMitigation` = baseDamage[rank-1] + totalAd × totalAdRatio + bonusAd × bonusAdRatio + ap × apRatio
+   - `EvaluationContext` を構築（attacker/defender の ComputedStats、skillRank、championLevel、stackCount）
+   - `preMitigation` = `evaluate(skill.damageFormula, context)`（FormulaEvaluator を使用）
+   - `preMitigation === 0` のスキルは結果から除外する（0ダメージフィルタ）
    - `effectiveResistance` = 貫通適用後の有効防御力（物理）or 有効MR（魔法）。真のダメージは 0
    - `postMitigation` = preMitigation × 100 / (100 + effectiveResistance)
    - `reductionPercent` = (preMitigation - postMitigation) / preMitigation × 100
@@ -29,3 +31,4 @@ function calculateDamage(attacker: Champion, defender: Champion): DamageResult
 魔法ダメージ：`magicResist × (1 - magicPenPercent/100) - magicPenFlat`（下限 0）
 
 詳細な計算式は `domain/rules.md` の「ダメージ計算式」を参照。
+`evaluate` 関数の詳細は `domain/services/formula-evaluator.md` を参照。

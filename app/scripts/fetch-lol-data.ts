@@ -7,6 +7,18 @@ const OUT = join(process.cwd(), "src/contexts/games/lol/damage-calc/infrastructu
 type DamageType = "physical" | "magic" | "true";
 type SkillSlot = "Q" | "W" | "E" | "R";
 
+type StatRef =
+  | "attacker.totalAd"
+  | "attacker.bonusAd"
+  | "attacker.ap";
+
+type DamageFormula =
+  | { kind: "const"; value: number }
+  | { kind: "byRank"; values: number[] }
+  | { kind: "stat"; ref: StatRef }
+  | { kind: "add"; operands: DamageFormula[] }
+  | { kind: "mul"; operands: DamageFormula[] };
+
 function mapDamageType(raw: string | null | undefined): DamageType {
   if (raw === "MAGIC_DAMAGE") return "magic";
   if (raw === "TRUE_DAMAGE") return "true";
@@ -25,7 +37,7 @@ async function fetchJson(url: string): Promise<unknown> {
 
 type LevelingEntry = { attribute: string; modifiers: Array<{ values: number[]; units: string[] }> };
 
-function extractSkillDamage(ability: Record<string, unknown>) {
+function extractScalars(ability: Record<string, unknown>) {
   let baseDamageByRank: number[] = [];
   let totalAdRatioByRank: number[] = [];
   let bonusAdRatioByRank: number[] = [];
@@ -57,6 +69,25 @@ function extractSkillDamage(ability: Record<string, unknown>) {
   return { baseDamageByRank, totalAdRatioByRank, bonusAdRatioByRank, apRatioByRank };
 }
 
+function buildDamageFormula(ability: Record<string, unknown>): DamageFormula {
+  const { baseDamageByRank, totalAdRatioByRank, bonusAdRatioByRank, apRatioByRank } = extractScalars(ability);
+
+  const hasBase = baseDamageByRank.some((v) => v !== 0);
+  const hasTotalAd = totalAdRatioByRank.some((v) => v !== 0);
+  const hasBonusAd = bonusAdRatioByRank.some((v) => v !== 0);
+  const hasAp = apRatioByRank.some((v) => v !== 0);
+
+  const operands: DamageFormula[] = [];
+  if (hasBase) operands.push({ kind: "byRank", values: baseDamageByRank });
+  if (hasTotalAd) operands.push({ kind: "mul", operands: [{ kind: "stat", ref: "attacker.totalAd" }, { kind: "byRank", values: totalAdRatioByRank }] });
+  if (hasBonusAd) operands.push({ kind: "mul", operands: [{ kind: "stat", ref: "attacker.bonusAd" }, { kind: "byRank", values: bonusAdRatioByRank }] });
+  if (hasAp) operands.push({ kind: "mul", operands: [{ kind: "stat", ref: "attacker.ap" }, { kind: "byRank", values: apRatioByRank }] });
+
+  if (operands.length === 0) return { kind: "const", value: 0 };
+  if (operands.length === 1) return operands[0];
+  return { kind: "add", operands };
+}
+
 async function buildChampionData(key: string) {
   const data = await fetchJson(`${BASE}/champions/${key}.json`) as Record<string, unknown>;
   const stats = data.stats as Record<string, { flat: number; perLevel: number }>;
@@ -66,15 +97,11 @@ async function buildChampionData(key: string) {
     const ab = abilities[slot]?.[0];
     if (!ab) return [];
     const damageType = mapDamageType(ab.damageType as string);
-    const { baseDamageByRank, totalAdRatioByRank, bonusAdRatioByRank, apRatioByRank } = extractSkillDamage(ab);
     return [{
       slot,
       name: ab.name as string,
       damageType,
-      baseDamageByRank,
-      totalAdRatioByRank,
-      bonusAdRatioByRank,
-      apRatioByRank,
+      damageFormula: buildDamageFormula(ab),
     }];
   });
 
@@ -88,6 +115,7 @@ async function buildChampionData(key: string) {
       armor: stats.armor.flat,
       magicResist: stats.magicResistance.flat,
       attackSpeed: stats.attackSpeed.flat,
+      moveSpeed: stats.movementSpeed?.flat ?? 0,
     },
     statGrowth: {
       hp: stats.health.perLevel,
