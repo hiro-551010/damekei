@@ -1,4 +1,4 @@
-import { DamageType, SkillSlot } from "../domain/types";
+import { DamageFormula, DamageType, SkillSlot } from "../domain/types";
 
 export type ChampionSummaryDto = {
   id: string;
@@ -10,10 +10,7 @@ export type SkillDamageSpecDto = {
   slot: SkillSlot;
   name: string;
   damageType: DamageType;
-  baseDamageByRank: number[];
-  totalAdRatioByRank: number[];
-  bonusAdRatioByRank: number[];
-  apRatioByRank: number[];
+  damageFormula: DamageFormula;
 };
 
 export type ChampionDetailDto = {

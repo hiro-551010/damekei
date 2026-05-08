@@ -1,4 +1,4 @@
-import { DamageType, SkillSlot } from "./types";
+import { DamageFormula, DamageType, SkillSlot } from "./types";
 import { InvalidSkillAllocationError } from "./errors";
 
 export type ChampionBaseStats = {
@@ -20,27 +20,29 @@ export type SkillDamageSpec = {
   slot: SkillSlot;
   name: string;
   damageType: DamageType;
-  baseDamageByRank: number[];
-  totalAdRatioByRank: number[];
-  bonusAdRatioByRank: number[];
-  apRatioByRank: number[];
+  damageFormula: DamageFormula;
   variants?: SkillVariantSpec[];
 };
 
 export type ChampionPassiveSpec =
-  | { kind: "onHitMaxHpPercent"; percentByLevel: number[]; damageType: DamageType };
+  | { kind: "onHitDamage"; formula: DamageFormula; damageType: DamageType };
 
 export type SkillVariantSpec = {
   name: string;
-  multiplier: number;
+  formula?: DamageFormula;
+  multiplier?: number;
   damageType?: DamageType;
 };
 
+export type StatModifier = {
+  stat: import("./types").StatRef;
+  addFormula: DamageFormula;
+};
+
 export type ChampionStateModifier = {
-  kind: "bonusAdFromBaseAd";
   name: string;
   triggerSlot: SkillSlot;
-  percentByRank: number[];
+  statModifiers: StatModifier[];
 };
 
 export type AACritOverride = {
@@ -132,6 +134,7 @@ export type Champion = {
 export type ComputedStats = {
   totalAd: number;
   bonusAd: number;
+  baseAd: number;
   ap: number;
   armor: number;
   magicResist: number;
@@ -141,6 +144,18 @@ export type ComputedStats = {
   magicPenFlat: number;
   magicPenPercent: number;
   critChance: number;
+  bonusArmor: number;
+  bonusMagicResist: number;
+  moveSpeed: number;
+  bonusMoveSpeed: number;
+};
+
+export type EvaluationContext = {
+  attacker: ComputedStats;
+  defender: ComputedStats;
+  skillRank: number;
+  championLevel: number;
+  stackCount?: number;
 };
 
 export type AutoAttackResult = {

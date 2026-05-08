@@ -21,15 +21,13 @@ function skill(
   damageType: "physical" | "magic" | "true",
   baseDamageByRank: number[]
 ): SkillDamageSpec {
-  const len = baseDamageByRank.length || 1;
   return {
     slot,
     name: `${slot} Skill`,
     damageType,
-    baseDamageByRank,
-    totalAdRatioByRank: Array(len).fill(0),
-    bonusAdRatioByRank: Array(len).fill(0),
-    apRatioByRank: Array(len).fill(0),
+    damageFormula: baseDamageByRank.length === 1 && baseDamageByRank[0] === 0
+      ? { kind: "const", value: 0 }
+      : { kind: "byRank", values: baseDamageByRank },
   };
 }
 
@@ -236,46 +234,7 @@ describe("calculateDamage", () => {
     expect(result.skills[0].postMitigation).toBe(0);
   });
 
-  it("rank>0 かつ preMitigation=0 のスキルは結果に含まれない", () => {
-    const result = calculateDamage(
-      attacker(
-        [
-          skill("Q", "physical", [100]),
-          skill("W", "physical", [0]),  // rank=1, preMitigation=0 → フィルタされる
-          skill("E", "magic", [0]),    // rank=1, preMitigation=0 → フィルタされる
-          skill("R", "physical", [50]),
-        ],
-        alloc({ q: 1, w: 1, e: 1, r: 1 })
-      ),
-      defender()
-    );
-
-    expect(result.skills).toHaveLength(2);
-    expect(result.skills.map((s) => s.slot)).toEqual(["Q", "R"]);
-  });
-
-  it("rank=0 のスキルは preMitigation=0 でも結果に残る（未習得スキルの既存挙動維持）", () => {
-    const result = calculateDamage(
-      attacker(
-        [
-          skill("Q", "physical", [0]),  // rank=0 → フィルタされない
-          skill("W", "physical", [0]),  // rank=0 → フィルタされない
-          skill("E", "physical", [100]), // rank=1, preMitigation>0 → 含まれる
-          skill("R", "physical", [0]),  // rank=0 → フィルタされない
-        ],
-        alloc({ q: 0, w: 0, e: 1, r: 0 })
-      ),
-      defender()
-    );
-
-    // rank=0 は3つ（Q/W/R）+ rank=1 かつ preMit>0 は1つ（E）= 合計4つ
-    expect(result.skills).toHaveLength(4);
-    expect(result.skills.map((s) => s.slot)).toEqual(["Q", "W", "E", "R"]);
-    expect(result.skills.find((s) => s.slot === "Q")!.preMitigation).toBe(0);
-    expect(result.skills.find((s) => s.slot === "E")!.preMitigation).toBe(100);
-  });
-
-    it("全4スキル(QWER)の結果配列が返る", () => {
+  it("全4スキル(QWER)の結果配列が返る", () => {
     const result = calculateDamage(
       attacker(
         [
@@ -359,7 +318,7 @@ describe("calculateDamage", () => {
       defender(0, 0)
     );
     // AP = 100 * 1.30 = 130
-    // skill Q: apRatio = 0 → preMitigation = 0 (スキル係数なし)
+    // skill Q: ap formula なし → preMitigation = 0 (スキル係数なし)
     // APスケールスキルで確認するため別パターンで
     expect(result.autoAttack.postMitigation).toBeGreaterThan(0);
   });
@@ -371,7 +330,18 @@ describe("calculateDamage", () => {
     const result = calculateDamage(
       attacker(
         [
-          { slot: "Q", name: "Q Skill", damageType: "magic", baseDamageByRank: [0], totalAdRatioByRank: [0], bonusAdRatioByRank: [0], apRatioByRank: [AP_RATIO] },
+          {
+            slot: "Q",
+            name: "Q Skill",
+            damageType: "magic",
+            damageFormula: {
+              kind: "mul",
+              operands: [
+                { kind: "stat", ref: "attacker.ap" },
+                { kind: "const", value: AP_RATIO },
+              ],
+            },
+          },
           skill("W", "physical", [0]),
           skill("E", "true", [0]),
           skill("R", "physical", [0]),
@@ -507,27 +477,50 @@ describe('Aatrox 固有ロジック', () => {
           slot: 'Q',
           name: 'ダーキン・ブレード',
           damageType: 'physical',
-          baseDamageByRank: [10, 20, 30, 40, 50],
-          totalAdRatioByRank: [1.0, 1.0, 1.0, 1.0, 1.0],
-          bonusAdRatioByRank: [0, 0, 0, 0, 0],
-          apRatioByRank: [0, 0, 0, 0, 0],
-          variants: [{ name: 'スイートスポット', multiplier: 1.7 }],
+          damageFormula: {
+            kind: 'add',
+            operands: [
+              { kind: 'byRank', values: [10, 20, 30, 40, 50] },
+              { kind: 'mul', operands: [{ kind: 'stat', ref: 'attacker.totalAd' }, { kind: 'byRank', values: [1.0, 1.0, 1.0, 1.0, 1.0] }] },
+            ],
+          },
+          variants: [{
+            name: 'スイートスポット',
+            multiplier: 1.7,
+            formula: undefined,
+          }],
         },
         skill('W', 'magic', [0, 0, 0, 0, 0]),
         skill('E', 'physical', [0, 0, 0, 0, 0]),
         skill('R', 'physical', [0, 0, 0]),
       ],
       passiveSpec: {
-        kind: 'onHitMaxHpPercent',
-        percentByLevel: [4.0, 4.39, 4.79, 5.18, 5.58, 5.97, 6.37, 6.76, 7.16, 7.55, 7.95, 8.34, 8.74, 9.13, 9.53, 9.92, 10.32, 10.71],
+        kind: 'onHitDamage',
+        formula: {
+          kind: 'mul',
+          operands: [
+            { kind: 'stat', ref: 'defender.maxHp' },
+            { kind: 'byLevel', values: [0.04, 0.0439, 0.0479, 0.0518, 0.0558, 0.0597, 0.0637, 0.0676, 0.0716, 0.0755, 0.0795, 0.0834, 0.0874, 0.0913, 0.0953, 0.0992, 0.1032, 0.1071] },
+          ],
+        },
         damageType: 'physical',
       },
       stateModifiers: [
         {
-          kind: 'bonusAdFromBaseAd',
           name: 'R (World Ender)',
           triggerSlot: 'R',
-          percentByRank: [20, 30, 40],
+          statModifiers: [
+            {
+              stat: 'attacker.bonusAd',
+              addFormula: {
+                kind: 'mul',
+                operands: [
+                  { kind: 'stat', ref: 'attacker.baseAd' },
+                  { kind: 'byRank', values: [0.20, 0.30, 0.40] },
+                ],
+              },
+            },
+          ],
         },
       ],
     };

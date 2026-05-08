@@ -42,9 +42,12 @@ export function computeStats(champion: Champion): ComputedStats {
     .reduce((sum, p) => sum + p.ratio, 0);
   ap = ap * (1 + apAmpTotal);
 
+  const totalAd = baseAd + bonusAd;
+
   return {
-    totalAd: baseAd + bonusAd,
+    totalAd,
     bonusAd,
+    baseAd,
     ap,
     armor: statAtLevel(baseStats.armor, statGrowth.armor, level) + bonusArmor,
     magicResist: statAtLevel(baseStats.magicResist, statGrowth.magicResist, level) + bonusMagicResist,
@@ -54,5 +57,9 @@ export function computeStats(champion: Champion): ComputedStats {
     magicPenFlat,
     magicPenPercent,
     critChance,
+    bonusArmor,
+    bonusMagicResist,
+    moveSpeed: 0,
+    bonusMoveSpeed: 0,
   };
 }
