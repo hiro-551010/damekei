@@ -97,5 +97,111 @@
       "alwaysCrit": true,
       "baseMultiplier": 1.10
     }
+  },
+  "DrMundo": {
+    "skillOverrides": {
+      "Q": {
+        "name": "Infected Bonesaw",
+        "damageType": "magic",
+        "damageFormula": {
+          "kind": "mul",
+          "operands": [
+            { "kind": "stat", "ref": "defender.currentHp" },
+            { "kind": "byRank", "values": [0.20, 0.225, 0.25, 0.275, 0.30] }
+          ]
+        }
+      }
+    }
+  },
+  "KogMaw": {
+    "skillOverrides": {
+      "W": {
+        "name": "Bio-Arcane Barrage（オンヒット）",
+        "damageType": "magic",
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            {
+              "kind": "mul",
+              "operands": [
+                { "kind": "stat", "ref": "defender.maxHp" },
+                { "kind": "byRank", "values": [0.03, 0.0375, 0.045, 0.0525, 0.06] }
+              ]
+            },
+            {
+              "kind": "mul",
+              "operands": [
+                { "kind": "stat", "ref": "attacker.ap" },
+                { "kind": "const", "value": 0.015 }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Nasus": {
+    "skillOverrides": {
+      "Q": {
+        "name": "Siphoning Strike",
+        "damageType": "physical",
+        "damageFormula": {
+          "kind": "add",
+          "operands": [
+            { "kind": "byRank", "values": [35, 55, 75, 95, 115] },
+            { "kind": "stat", "ref": "attacker.stackCount" }
+          ]
+        }
+      }
+    }
+  },
+  "Vayne": {
+    "skillOverrides": {
+      "W": {
+        "name": "Silver Bolts（3ヒット目）",
+        "damageType": "true",
+        "damageFormula": {
+          "kind": "mul",
+          "operands": [
+            { "kind": "stat", "ref": "defender.maxHp" },
+            { "kind": "byRank", "values": [0.06, 0.07, 0.08, 0.09, 0.10] }
+          ]
+        }
+      }
+    }
+  },
+  "Viego": {
+    "skillOverrides": {
+      "Q": {
+        "name": "Blade of the Ruined King（パッシブ on-hit）",
+        "damageType": "physical",
+        "damageFormula": {
+          "kind": "mul",
+          "operands": [
+            { "kind": "stat", "ref": "defender.currentHp" },
+            { "kind": "byRank", "values": [0.02, 0.03, 0.04, 0.05, 0.06] }
+          ]
+        }
+      }
+    }
+  },
+  "Yone": {
+    "aaCritOverride": {
+      "alwaysCrit": false,
+      "baseMultiplier": 1.5
+    },
+    "skillOverrides": {
+      "W": {
+        "name": "Spirit Cleave（魔法ダメージ成分）",
+        "damageType": "magic",
+        "damageFormula": {
+          "kind": "mul",
+          "operands": [
+            { "kind": "stat", "ref": "defender.maxHp" },
+            { "kind": "byRank", "values": [0.04, 0.045, 0.05, 0.055, 0.06] }
+          ]
+        }
+      }
+    }
   }
 }
