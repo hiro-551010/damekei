@@ -17,6 +17,10 @@ type Props = {
   onLevelChange: (level: number) => void;
   onItemsChange: (ids: number[]) => void;
   onSkillAllocationChange?: (alloc: SkillAllocationDto) => void;
+  stackCount?: number;
+  onStackCountChange?: (n: number) => void;
+  hpPercent?: number;
+  onHpPercentChange?: (pct: number) => void;
 };
 
 export function ChampionPanel({
@@ -31,6 +35,10 @@ export function ChampionPanel({
   onLevelChange,
   onItemsChange,
   onSkillAllocationChange,
+  stackCount,
+  onStackCountChange,
+  hpPercent,
+  onHpPercentChange,
 }: Props) {
   const options: SelectOption<string>[] = champions.map((c) => ({
     value: c.id,
@@ -76,6 +84,36 @@ export function ChampionPanel({
           allocation={skillAllocation}
           onChange={onSkillAllocationChange}
         />
+      )}
+
+      {stackCount !== undefined && onStackCountChange && (
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-foreground">スタック数</label>
+          <input
+            type="number"
+            min={0}
+            value={stackCount}
+            onChange={(e) => onStackCountChange(Math.max(0, Number(e.target.value)))}
+            className="w-24 border rounded px-2 py-1 text-sm text-foreground"
+          />
+        </div>
+      )}
+
+      {hpPercent !== undefined && onHpPercentChange && (
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-foreground">現在HP%</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min={1}
+              max={100}
+              value={hpPercent}
+              onChange={(e) => onHpPercentChange(Number(e.target.value))}
+              className="flex-1"
+            />
+            <span className="w-10 text-center font-semibold text-foreground">{hpPercent}%</span>
+          </div>
+        </div>
       )}
     </div>
   );

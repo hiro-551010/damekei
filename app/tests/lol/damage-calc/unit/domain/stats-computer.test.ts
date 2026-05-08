@@ -34,6 +34,7 @@ function species(): ChampionSpecies {
       armor: BASE_ARMOR,
       magicResist: BASE_MR,
       attackSpeed: 0.625,
+      moveSpeed: 325,
     },
     statGrowth: {
       hp: 100,

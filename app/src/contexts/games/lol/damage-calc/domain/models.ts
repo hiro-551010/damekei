@@ -7,6 +7,7 @@ export type ChampionBaseStats = {
   armor: number;
   magicResist: number;
   attackSpeed: number;
+  moveSpeed: number;
 };
 
 export type ChampionStatGrowth = {
@@ -156,6 +157,7 @@ export type EvaluationContext = {
   skillRank: number;
   championLevel: number;
   stackCount?: number;
+  defenderHpPercent?: number;
 };
 
 export type AutoAttackResult = {

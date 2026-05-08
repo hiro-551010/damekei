@@ -49,8 +49,8 @@ type StatRef =
   | "attacker.stackCount"
   // 防御側
   | "defender.maxHp"
-  | "defender.currentHp"        // 計算機は満HP前提なので maxHp と同値
-  | "defender.missingHp"        // maxHp - currentHp（満HP前提では 0）
+  | "defender.currentHp"        // defenderHpPercent を反映（省略時は maxHp と同値）
+  | "defender.missingHp"        // maxHp × (1 - defenderHpPercent / 100)（省略時は 0）
   | "defender.armor"
   | "defender.magicResist"
 ```
@@ -68,8 +68,8 @@ type StatRef =
 | `"attacker.maxHp"` | 攻撃側の最大HP |
 | `"attacker.stackCount"` | 攻撃側のスタック数（Nasus Q / Veigar パッシブ等。省略時は 0） |
 | `"defender.maxHp"` | 防御側の最大HP |
-| `"defender.currentHp"` | 防御側の現在HP（計算機は満HP前提のため `maxHp` と同値） |
-| `"defender.missingHp"` | 防御側の欠けたHP（計算機は満HP前提のため 0） |
+| `"defender.currentHp"` | 防御側の現在HP（`maxHp × defenderHpPercent / 100`。省略時は `maxHp` と同値） |
+| `"defender.missingHp"` | 防御側の欠けたHP（`maxHp × (1 - defenderHpPercent / 100)`。省略時は 0） |
 | `"defender.armor"` | 防御側の総防御力 |
 | `"defender.magicResist"` | 防御側の総魔法耐性 |
 
@@ -112,18 +112,20 @@ DamageFormula の評価器（FormulaEvaluator）への入力。
 
 ```typescript
 type EvaluationContext = {
-  attacker: ComputedStats;  // 攻撃側の最終ステータス（stackCount は optional 拡張）
-  defender: ComputedStats;  // 防御側の最終ステータス（満HP前提）
-  skillRank: number;        // 評価するスキルランク（1〜5 または 1〜3）
-  championLevel: number;    // 攻撃側チャンピオンレベル（1〜18）
-  stackCount?: number;      // Nasus Q / Veigar パッシブ等（省略時は 0）
+  attacker: ComputedStats;       // 攻撃側の最終ステータス（stackCount は optional 拡張）
+  defender: ComputedStats;       // 防御側の最終ステータス
+  skillRank: number;             // 評価するスキルランク（1〜5 または 1〜3）
+  championLevel: number;         // 攻撃側チャンピオンレベル（1〜18）
+  stackCount?: number;           // Nasus Q / Veigar パッシブ等（省略時は 0）
+  defenderHpPercent?: number;    // 防御側の現在HP%（0〜100。省略時は 100 = 満HP）
 }
 ```
 
 | フィールド | 説明 |
 |---|---|
 | `attacker` | 攻撃側の最終ステータス（`StatsComputer` が算出した `ComputedStats`） |
-| `defender` | 防御側の最終ステータス（満HP前提。`defender.currentHp === defender.maxHp`） |
+| `defender` | 防御側の最終ステータス |
 | `skillRank` | 評価対象スキルのランク。`byRank` ノードのインデックスに使用 |
 | `championLevel` | 攻撃側チャンピオンのレベル。`byLevel` ノードのインデックスに使用 |
 | `stackCount` | スタック依存スキル用の追加入力。省略時は 0 として扱う |
+| `defenderHpPercent` | 防御側の現在HP%（0〜100）。省略時は 100（満HP）として扱う。`defender.currentHp` / `defender.missingHp` の評価に使用 |

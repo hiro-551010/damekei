@@ -59,7 +59,7 @@ export function computeStats(champion: Champion): ComputedStats {
     critChance,
     bonusArmor,
     bonusMagicResist,
-    moveSpeed: 0,
+    moveSpeed: species.baseStats.moveSpeed,
     bonusMoveSpeed: 0,
   };
 }

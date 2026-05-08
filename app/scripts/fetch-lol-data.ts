@@ -115,6 +115,7 @@ async function buildChampionData(key: string) {
       armor: stats.armor.flat,
       magicResist: stats.magicResistance.flat,
       attackSpeed: stats.attackSpeed.flat,
+      moveSpeed: stats.movementSpeed?.flat ?? 0,
     },
     statGrowth: {
       hp: stats.health.perLevel,
