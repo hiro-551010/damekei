@@ -53,31 +53,51 @@ stat_at_level = base + growth × (level - 1) × (0.7025 + 0.0175 × (level - 1))
 ### 総ステータス合算
 
 ```
-totalAd    = ad_at_level + Σ(items[*].stats.ad)
-bonusAd    = Σ(items[*].stats.ad)
-ap         = Σ(items[*].stats.ap)
-armor      = armor_at_level + Σ(items[*].stats.armor)
-magicResist = mr_at_level + Σ(items[*].stats.magicResist)
-hp         = hp_at_level + Σ(items[*].stats.hp)
-lethality  = Σ(items[*].stats.lethality)
+totalAd         = ad_at_level + Σ(items[*].stats.ad)
+bonusAd         = Σ(items[*].stats.ad)
+ap              = Σ(items[*].stats.ap)
+armor           = armor_at_level + Σ(items[*].stats.armor)
+bonusArmor      = Σ(items[*].stats.armor)
+magicResist     = mr_at_level + Σ(items[*].stats.magicResist)
+bonusMagicResist = Σ(items[*].stats.magicResist)
+hp              = hp_at_level + Σ(items[*].stats.hp)
+moveSpeed       = baseMovespeed + Σ(items[*].stats.moveSpeed)
+bonusMoveSpeed  = Σ(items[*].stats.moveSpeed)
+lethality       = Σ(items[*].stats.lethality)
 armorPenPercent = Σ(items[*].stats.armorPenPercent) + Σ(items[*].passives[kind=armorPenPercent].value)
 magicPenFlat    = Σ(items[*].stats.magicPenFlat)
 magicPenPercent = Σ(items[*].stats.magicPenPercent) + Σ(items[*].passives[kind=magicPenPercent].value)
 ```
 
 > 複数アイテムの %貫通は加算する（乗算ではない）。LoL の現行仕様に従う。
+> `baseMovespeed` は `ChampionSpecies` が保持する（Meraki データから取得）。
 
 ## ダメージ計算式（DamageCalculator）
 
 ### スキルダメージの軽減前ダメージ（preMitigationDamage）
 
 ```
-preMitigationDamage =
-  skill.baseDamageByRank[rank - 1]
-  + attacker.totalAd × skill.totalAdRatio
-  + attacker.bonusAd × skill.bonusAdRatio
-  + attacker.ap      × skill.apRatio
+preMitigationDamage = evaluate(skill.damageFormula, context)
 ```
+
+`context` は `EvaluationContext`（`domain/types.md` 参照）。
+`evaluate` は FormulaEvaluator が担う（`domain/services/formula-evaluator.md` 参照）。
+
+### FormulaEvaluator の評価ルール
+
+各 `DamageFormula` ノードは以下のルールで再帰的に評価される。
+
+| kind | 評価ルール |
+|---|---|
+| `const` | `value` をそのまま返す |
+| `byRank` | `values[skillRank - 1]` を返す（`skillRank` は 1 起算） |
+| `byLevel` | `values[championLevel - 1]` を返す（`championLevel` は 1 起算） |
+| `stat` | `context[ref.owner][ref.name]` を返す。`defender.currentHp` は満HP前提で `defender.maxHp` と同値。`defender.missingHp` は 0。`attacker.stackCount` は `context.stackCount ?? 0` |
+| `add` | 全 operands を評価して合計する |
+| `mul` | 全 operands を評価して積を返す |
+| `min` | 2つの operands を評価して小さい方を返す |
+| `max` | 2つの operands を評価して大きい方を返す |
+| `clamp` | `value` を評価し、`min` と `max` を評価して `max(min, min(value, max))` を返す |
 
 ### 有効防御力の計算（物理ダメージ）
 
@@ -123,7 +143,7 @@ Meraki が複数ヒットの合計値を返す場合、そのまま合計値と�
 
 **適用例：** Graves Q（着弾 + 後方爆発合計）、Katarina R（全ダガー合計）、Lucian R（全弾合計）など。
 
-**例外：** 往路・復路で damageType が異なる場合（Ahri Q など）や、中心ヒットと外周ヒットでダメージが異なる場合は `variants` で別バリアントとして表示する。
+**例外：** 往路・復路で damageType が異なる場合（Ahri Q など）や、中心ヒットと外周ヒットでダメージが異なる場合は `variants` で別バリアントとして表示する。バリアントは `SkillVariantSpec.formula` で独立した計算式を持つ。
 
 ### DoT（継続ダメージ）スキルの表示単位
 
@@ -135,27 +155,50 @@ Meraki が複数ヒットの合計値を返す場合、そのまま合計値と�
 
 **実装：** `champions.json` のスキル名フィールドに「（1秒あたり）」を付記して対応する。champion-passives.json の `skillOverrides.name` で上書きする。
 
+DoT の `damageFormula` は 1秒あたりの値を返す式ツリーで表現する:
+```json
+{
+  "kind": "add",
+  "operands": [
+    { "kind": "byRank", "values": [60, 85, 110] },
+    { "kind": "mul", "operands": [
+      { "kind": "stat", "ref": "attacker.ap" },
+      { "kind": "const", "value": 0.25 }
+    ]}
+  ]
+}
+```
+
+
 ### チャージ時間依存スキルの表示単位
 
 チャージ時間によってダメージが変わるスキル（Sion Q・Varus Q・Irelia W 等）は、Meraki が返す値をそのまま表示する。Meraki は一般的に **最大チャージ時の値** を格納している。
 
 スキル名に「（最大チャージ時）」を付記してユーザーに明示する。付記は `champion-passives.json` の `skillOverrides.name` で上書きする。
 
-### HP%・移動速度比例ダメージの扱い
+### HP%・移動速度比例ダメージの表現
 
-「現在 HP%」「残 HP%」「移動速度比例」など、対象または自身のステータスに比例するダメージ成分は、現在のモデル（`baseDamage + ratio × stat`）では表現できない。
+HP% スケーリング・移動速度スケーリング等は `DamageFormula` の `stat` ノードで表現できる。
 
-これらは **既知の制限** としてチャンピオン docs の `## 既知の制限` セクションに記録し、計算機の表示値はその成分を含まない参考値として扱う。実装上の修正は行わない。
+```
+// 例: 防御側最大HP 10% の魔法ダメージ
+{ "kind": "mul", "operands": [
+  { "kind": "stat", "ref": "defender.maxHp" },
+  { "kind": "const", "value": 0.10 }
+]}
+```
+
+フェーズ1時点では `damageFormula` の定義のみ行い、実際のデータ移行はフェーズ3で実施する。
 
 ### 0ダメージスキルの扱い
 
 スキルスロットの `preMitigationDamage` が 0 の場合、そのスロットを計算結果に含めない。
 
-**理由：** Meraki データがダメージのないスキル（移動・バフ・CC専用スキル等）に `physical` を割り当てつつ `baseDamage: 0` / ratio なしで返すケースが存在する。これらを表示すると「0ダメージ行」がUIに並んでユーザーを混乱させる。
+**理由：** Meraki データがダメージのないスキル（移動・バフ・CC専用スキル等）に `physical` を割り当てつつ係数なしで返すケースが存在する。これらを表示すると「0ダメージ行」がUIに並んでユーザーを混乱させる。
 
 **適用条件：**
 - スキルランク ≥ 1（ランク0の未習得スキルは従来通り非表示）
-- `preMitigationDamage === 0`（baseDamage = 0 かつ全 ratio = 0）
+- `evaluate(skill.damageFormula, context) === 0`
 
 **スコープ外：** 「本来ダメージがあるが Meraki が誤って 0 を返しているケース」は別途 `skillOverrides` で正しい値に上書きして対応する。
 
@@ -165,8 +208,6 @@ Meraki が複数ヒットの合計値を返す場合、そのまま合計値と�
 
 | 項目 | 理由 |
 |---|---|
-| チャンピオン固有パッシブ（例：ガレンのW、ダリウスのパッシブ） | チャンピオン個別実装が必要 |
-| オンヒット効果（例：ウィッツエンド、ナッシャートゥース） | スキルダメージとは別軸の計算 |
 | ルーンによるステータス修正 | データソースの拡張が必要 |
 | クリティカルダメージ計算 | 確率的要素を含む |
 | シールド・ダメージ軽減バフ（防御側） | 試合状況依存 |
