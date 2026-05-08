@@ -108,11 +108,11 @@ function calculateSkills(
   atkStats: ComputedStats,
   defStats: ComputedStats,
 ): SkillDamageResult[] {
-  return attacker.species.skills.map((spec) => {
+  return attacker.species.skills.flatMap((spec) => {
     const rank = skillRank(spec.slot, attacker.skillAllocation);
 
     if (rank === 0) {
-      return {
+      return [{
         slot: spec.slot,
         name: spec.name,
         damageType: spec.damageType,
@@ -121,7 +121,7 @@ function calculateSkills(
         postMitigation: 0,
         reductionPercent: 0,
         hpPercent: 0,
-      };
+      }];
     }
 
     const rankIndex = rank - 1;
@@ -131,6 +131,10 @@ function calculateSkills(
       (spec.totalAdRatioByRank[rankIndex] ?? 0) * atkStats.totalAd +
       (spec.bonusAdRatioByRank[rankIndex] ?? 0) * atkStats.bonusAd +
       (spec.apRatioByRank[rankIndex] ?? 0) * atkStats.ap;
+
+    if (preMitigation === 0) {
+      return [];
+    }
 
     let effectiveResistance: number;
     if (spec.damageType === "physical") {
@@ -177,7 +181,7 @@ function calculateSkills(
       };
     });
 
-    return {
+    return [{
       slot: spec.slot,
       name: spec.name,
       damageType: spec.damageType,
@@ -187,7 +191,7 @@ function calculateSkills(
       reductionPercent: Math.round(reductionPercent * 10) / 10,
       hpPercent: Math.round(hpPercent * 10) / 10,
       ...(variants.length > 0 && { variants }),
-    };
+    }];
   });
 }
 

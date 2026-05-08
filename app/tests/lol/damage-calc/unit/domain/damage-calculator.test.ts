@@ -236,7 +236,46 @@ describe("calculateDamage", () => {
     expect(result.skills[0].postMitigation).toBe(0);
   });
 
-  it("全4スキル(QWER)の結果配列が返る", () => {
+  it("rank>0 かつ preMitigation=0 のスキルは結果に含まれない", () => {
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "physical", [100]),
+          skill("W", "physical", [0]),  // rank=1, preMitigation=0 → フィルタされる
+          skill("E", "magic", [0]),    // rank=1, preMitigation=0 → フィルタされる
+          skill("R", "physical", [50]),
+        ],
+        alloc({ q: 1, w: 1, e: 1, r: 1 })
+      ),
+      defender()
+    );
+
+    expect(result.skills).toHaveLength(2);
+    expect(result.skills.map((s) => s.slot)).toEqual(["Q", "R"]);
+  });
+
+  it("rank=0 のスキルは preMitigation=0 でも結果に残る（未習得スキルの既存挙動維持）", () => {
+    const result = calculateDamage(
+      attacker(
+        [
+          skill("Q", "physical", [0]),  // rank=0 → フィルタされない
+          skill("W", "physical", [0]),  // rank=0 → フィルタされない
+          skill("E", "physical", [100]), // rank=1, preMitigation>0 → 含まれる
+          skill("R", "physical", [0]),  // rank=0 → フィルタされない
+        ],
+        alloc({ q: 0, w: 0, e: 1, r: 0 })
+      ),
+      defender()
+    );
+
+    // rank=0 は3つ（Q/W/R）+ rank=1 かつ preMit>0 は1つ（E）= 合計4つ
+    expect(result.skills).toHaveLength(4);
+    expect(result.skills.map((s) => s.slot)).toEqual(["Q", "W", "E", "R"]);
+    expect(result.skills.find((s) => s.slot === "Q")!.preMitigation).toBe(0);
+    expect(result.skills.find((s) => s.slot === "E")!.preMitigation).toBe(100);
+  });
+
+    it("全4スキル(QWER)の結果配列が返る", () => {
     const result = calculateDamage(
       attacker(
         [
