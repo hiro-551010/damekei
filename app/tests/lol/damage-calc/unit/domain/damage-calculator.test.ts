@@ -59,6 +59,7 @@ function item(overrides: Partial<Item["stats"]> = {}, passives: ItemPassive[] = 
     id: 2001,
     name: "テストアイテム",
     nameEn: "Test Item",
+    tier: 3,
     stats: {
       ad: null,
       ap: null,

@@ -51,6 +51,7 @@ function item(overrides: Partial<Item["stats"]> = {}): Item {
     id: 1001,
     name: "テストアイテム",
     nameEn: "Test Item",
+    tier: 3,
     stats: {
       ad: null,
       ap: null,
