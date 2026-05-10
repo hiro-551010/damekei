@@ -26,6 +26,7 @@ export type ItemDto = {
   id: number;
   name: string;
   nameEn: string;
+  tier: number;
   stats: {
     ad: number | null;
     ap: number | null;

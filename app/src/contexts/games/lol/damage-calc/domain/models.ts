@@ -96,6 +96,7 @@ export type Item = {
   id: number;
   name: string;
   nameEn: string;
+  tier: number;
   stats: ItemStats;
   passives: ItemPassive[];
 };

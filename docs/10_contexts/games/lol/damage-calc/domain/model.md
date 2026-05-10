@@ -70,6 +70,7 @@ Meraki Analytics から取得した種族データ。リポジトリから取得
 | `id` | `number` | Meraki Analytics のアイテム ID |
 | `name` | `string` | 日本語名 |
 | `nameEn` | `string` | 英語名 |
+| `tier` | `number` | アイテムティア（1=スターター, 2=素材, 3=完成品, 4=特殊完成品） |
 | `stats` | `ItemStats` | 付与ステータス |
 | `passives` | `ItemPassive[]` | ダメージ計算に影響するパッシブ効果（空配列可） |
 

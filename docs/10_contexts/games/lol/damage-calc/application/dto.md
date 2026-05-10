@@ -50,12 +50,13 @@ application 層と presentation 層の間でデータをやりとりする型定
 
 ### ItemDto
 
-| フィールド | 型 |
-|---|---|
-| `id` | `number` |
-| `name` | `string` |
-| `nameEn` | `string` |
-| `stats` | `{ ad, ap, armor, magicResist, hp, lethality, armorPenPercent, magicPenFlat, magicPenPercent, attackSpeed, critChance, lifeSteal, abilityHaste: number \| null }` |
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `id` | `number` | |
+| `name` | `string` | 日本語名 |
+| `nameEn` | `string` | 英語名 |
+| `tier` | `number` | 1=スターター, 2=素材, 3=完成品, 4=特殊完成品 |
+| `stats` | `{ ad, ap, armor, magicResist, hp, lethality, armorPenPercent, magicPenFlat, magicPenPercent, attackSpeed, critChance, lifeSteal, abilityHaste: number \| null }` | |
 
 ---
 
