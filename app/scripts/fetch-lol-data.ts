@@ -1,8 +1,17 @@
 import { writeFileSync } from "fs";
 import { join } from "path";
 
-const BASE = "https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US";
+const BASE_EN = "https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US";
+const DDRAGON_BASE = "https://ddragon.leagueoflegends.com";
 const OUT = join(process.cwd(), "src/contexts/games/lol/damage-calc/infrastructure/data");
+
+async function fetchDDragonVersion(): Promise<string> {
+  const versions = await fetchJson(`${DDRAGON_BASE}/api/versions.json`) as string[];
+  return versions[0];
+}
+
+type DDragonChampionMap = Record<string, { name: string }>;
+type DDragonItemMap = Record<string, { name: string }>;
 
 type DamageType = "physical" | "magic" | "true";
 type SkillSlot = "Q" | "W" | "E" | "R";
@@ -88,10 +97,12 @@ function buildDamageFormula(ability: Record<string, unknown>): DamageFormula {
   return { kind: "add", operands };
 }
 
-async function buildChampionData(key: string) {
-  const data = await fetchJson(`${BASE}/champions/${key}.json`) as Record<string, unknown>;
-  const stats = data.stats as Record<string, { flat: number; perLevel: number }>;
-  const abilities = data.abilities as Record<string, Array<Record<string, unknown>>>;
+async function buildChampionData(key: string, ddJa: DDragonChampionMap) {
+  const dataEn = await fetchJson(`${BASE_EN}/champions/${key}.json`) as Record<string, unknown>;
+  const stats = dataEn.stats as Record<string, { flat: number; perLevel: number }>;
+  const abilities = dataEn.abilities as Record<string, Array<Record<string, unknown>>>;
+
+  const ddEntry = ddJa[key];
 
   const skills = (["Q", "W", "E", "R"] as SkillSlot[]).flatMap((slot) => {
     const ab = abilities[slot]?.[0];
@@ -100,6 +111,7 @@ async function buildChampionData(key: string) {
     return [{
       slot,
       name: ab.name as string,
+      nameEn: ab.name as string,
       damageType,
       damageFormula: buildDamageFormula(ab),
     }];
@@ -107,15 +119,15 @@ async function buildChampionData(key: string) {
 
   return {
     id: key,
-    name: data.name as string,
-    nameEn: data.name as string,
+    name: ddEntry?.name ?? (dataEn.name as string),
+    nameEn: dataEn.name as string,
     baseStats: {
       hp: stats.health.flat,
       ad: stats.attackDamage.flat,
       armor: stats.armor.flat,
       magicResist: stats.magicResistance.flat,
       attackSpeed: stats.attackSpeed.flat,
-      moveSpeed: stats.movementSpeed?.flat ?? 0,
+      moveSpeed: stats.movespeed.flat,
     },
     statGrowth: {
       hp: stats.health.perLevel,
@@ -127,9 +139,9 @@ async function buildChampionData(key: string) {
   };
 }
 
-async function fetchChampions() {
+async function fetchChampions(ddJa: DDragonChampionMap) {
   console.log("Fetching champion list...");
-  const list = await fetchJson(`${BASE}/champions.json`) as Record<string, unknown>;
+  const list = await fetchJson(`${BASE_EN}/champions.json`) as Record<string, unknown>;
   const keys = Object.keys(list);
   console.log(`Found ${keys.length} champions. Fetching details in batches...`);
 
@@ -137,7 +149,7 @@ async function fetchChampions() {
   const BATCH = 10;
   for (let i = 0; i < keys.length; i += BATCH) {
     const batch = keys.slice(i, i + BATCH);
-    const data = await Promise.all(batch.map((k) => buildChampionData(k).catch(() => null)));
+    const data = await Promise.all(batch.map((k) => buildChampionData(k, ddJa).catch(() => null)));
     results.push(...data.filter(Boolean));
     process.stdout.write(`  ${Math.min(i + BATCH, keys.length)}/${keys.length}\r`);
   }
@@ -145,18 +157,20 @@ async function fetchChampions() {
   return results;
 }
 
-async function fetchItems() {
+async function fetchItems(ddItemJa: DDragonItemMap) {
   console.log("Fetching items...");
-  const raw = await fetchJson(`${BASE}/items.json`) as Record<string, Record<string, unknown>>;
+  const rawEn = await fetchJson(`${BASE_EN}/items.json`) as Record<string, Record<string, unknown>>;
 
-  return Object.values(raw)
-    .filter((item) => !item.removed && (item.tier as number) >= 2)
+  return Object.values(rawEn)
+    .filter((item) => !item.removed && (item.tier as number) >= 1)
     .map((item) => {
+      const nameJa = ddItemJa[String(item.id)]?.name;
       const s = item.stats as Record<string, { flat: number; percent: number }>;
       return {
         id: item.id as number,
-        name: item.name as string,
+        name: nameJa ?? (item.name as string),
         nameEn: item.name as string,
+        tier: item.tier as number,
         stats: {
           ad: nullIfZero(s.attackDamage?.flat ?? 0),
           ap: nullIfZero(s.abilityPower?.flat ?? 0),
@@ -178,7 +192,18 @@ async function fetchItems() {
 }
 
 async function main() {
-  const [champions, items] = await Promise.all([fetchChampions(), fetchItems()]);
+  const ddVersion = await fetchDDragonVersion();
+  console.log(`DDragon version: ${ddVersion}`);
+  const [ddChampJa, ddItemJa] = await Promise.all([
+    fetchJson(`${DDRAGON_BASE}/cdn/${ddVersion}/data/ja_JP/champion.json`)
+      .then((d) => (d as { data: DDragonChampionMap }).data)
+      .catch(() => ({} as DDragonChampionMap)),
+    fetchJson(`${DDRAGON_BASE}/cdn/${ddVersion}/data/ja_JP/item.json`)
+      .then((d) => (d as { data: DDragonItemMap }).data)
+      .catch(() => ({} as DDragonItemMap)),
+  ]);
+
+  const [champions, items] = await Promise.all([fetchChampions(ddChampJa), fetchItems(ddItemJa)]);
   writeFileSync(join(OUT, "champions.json"), JSON.stringify(champions, null, 2));
   writeFileSync(join(OUT, "items.json"), JSON.stringify(items, null, 2));
   console.log(`champions.json: ${champions.length} entries`);
