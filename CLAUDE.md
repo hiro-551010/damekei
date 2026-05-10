@@ -109,6 +109,23 @@ npx tsx scripts/screenshot.ts <URL> /tmp/screenshot.png
 
 Docker 内のファイルが変わった場合（JSON 再生成など）は `docker compose restart web` してから確認する。
 
+#### 6. 完了報告前のチェックリスト（Definition of Done）
+
+ユーザーに「完了しました」と報告する前に、変更内容に応じて以下を必ず確認する。
+
+| 変更レイヤー | 必須確認項目 |
+|---|---|
+| domain / application | `npx vitest run <test-path>` が緑 + `npx tsc --noEmit` がエラーなし |
+| infrastructure | 既存テストが緑 + `npx tsc --noEmit` がエラーなし |
+| presentation（UI） | スクリーンショット視覚確認（前述「#### 5. UI 変更時の視覚確認」） + `npx tsc --noEmit` がエラーなし |
+| ドキュメントのみ | 対象実装との乖離が無いこと |
+
+**全変更共通：**
+
+- ドキュメント（`docs/10_contexts/<ctx>/`）と実装が整合していること
+- 変更範囲に無関係な変更が混入していないこと
+- 影響を受ける可能性のある他テストも実行して緑であること（疑わしいときは `npx vitest run` 全体実行）
+
 ### Agent への委譲（TDD）
 
 domain / application 層の変更時、Red フェーズと Green フェーズはそれぞれ別の Agent ツール呼び出しで行う。
