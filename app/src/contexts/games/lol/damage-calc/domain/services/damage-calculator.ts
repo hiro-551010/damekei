@@ -100,6 +100,8 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
     hpPercent: Math.round(hpPercent * 10) / 10,
     critPostMitigation: critPostMitigation !== null ? Math.round(critPostMitigation) : null,
     critHpPercent: critHpPercent !== null ? Math.round(critHpPercent * 10) / 10 : null,
+    onHitMagicPreMitigation: onHitPreMitigation > 0 ? onHitPreMitigation : null,
+    onHitMagicEffectiveResistance: onHitPreMitigation > 0 ? Math.round(effMR * 10) / 10 : null,
     onHitMagicPostMitigation,
     onHitMagicHpPercent,
     onHitPhysicalPostMitigation,

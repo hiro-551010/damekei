@@ -95,6 +95,8 @@ export type AutoAttackResultDto = {
   hpPercent: number;
   critPostMitigation: number | null;
   critHpPercent: number | null;
+  onHitMagicPreMitigation: number | null;
+  onHitMagicEffectiveResistance: number | null;
   onHitMagicPostMitigation: number | null;
   onHitMagicHpPercent: number | null;
   onHitPhysicalPostMitigation: number | null;

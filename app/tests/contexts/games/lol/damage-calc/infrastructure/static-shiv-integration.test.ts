@@ -81,5 +81,28 @@ describe("スタティックシブ（3087）統合テスト", () => {
         resultLowMr.autoAttack.onHitMagicPostMitigation!,
       );
     });
+
+    it("onHitMagicPreMitigation が 60 であること", async () => {
+      // Static Shiv の onHitMagicDamage.damage = 60
+      const result = await useCases.calculateDamage(
+        { ...baseAttacker, itemIds: [STATIC_SHIV_ID] },
+        baseDefender,
+      );
+      expect(result.autoAttack.onHitMagicPreMitigation).toBe(60);
+    });
+
+    it("onHitMagicEffectiveResistance が Aatrox の MR（≒32）であること", async () => {
+      // Aatrox レベル1: MR=32、magic pen なし → effectiveMR = 32.0
+      const result = await useCases.calculateDamage(
+        { ...baseAttacker, itemIds: [STATIC_SHIV_ID] },
+        baseDefender,
+      );
+      expect(result.autoAttack.onHitMagicEffectiveResistance).toBe(32.0);
+    });
+
+    it("onHitMagicPreMitigation がアイテムなしの場合 null であること", async () => {
+      const result = await useCases.calculateDamage(baseAttacker, baseDefender);
+      expect(result.autoAttack.onHitMagicPreMitigation).toBeNull();
+    });
   });
 });

@@ -61,10 +61,10 @@ function TableRows({ autoAttack, skills, championPassiveAA }: TableRowsProps) {
         <tr className="border-b border-gray-100 hover:bg-gray-50">
           <td className="py-2 px-3 font-bold">AA (オンヒット魔法)</td>
           <td className="py-2 px-3"><DamageTypeBadge type="magic" /></td>
-          <td className="py-2 px-3 text-right tabular-nums">—</td>
-          <td className="py-2 px-3 text-right tabular-nums text-foreground">—</td>
+          <td className="py-2 px-3 text-right tabular-nums">{autoAttack.onHitMagicPreMitigation}</td>
+          <td className="py-2 px-3 text-right tabular-nums text-foreground">{autoAttack.onHitMagicEffectiveResistance}</td>
           <td className="py-2 px-3 text-right tabular-nums font-semibold">{autoAttack.onHitMagicPostMitigation}</td>
-          <td className="py-2 px-3 text-right tabular-nums text-foreground">—</td>
+          <td className="py-2 px-3 text-right tabular-nums text-foreground">{autoAttack.reductionPercent}%</td>
           <td className="py-2 px-3 text-right tabular-nums font-semibold text-blue-600">{autoAttack.onHitMagicHpPercent}%</td>
         </tr>
       )}
