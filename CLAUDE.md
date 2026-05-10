@@ -109,6 +109,75 @@ npx tsx scripts/screenshot.ts <URL> /tmp/screenshot.png
 
 Docker 内のファイルが変わった場合（JSON 再生成など）は `docker compose restart web` してから確認する。
 
+### Agent への委譲（TDD）
+
+domain / application 層の変更時、Red フェーズと Green フェーズはそれぞれ別の Agent ツール呼び出しで行う。
+
+**subagent_type：** `general-purpose`（書き込み可能。`Explore` / `Plan` は読み取り専用なので不可）
+
+#### フロー
+
+1. **Red Agent 起動**：テストファイルのみを書かせる。Agent 内で `npx vitest run <test-path>` を実行し、失敗出力を返すよう指示する。
+2. **Claude が再検証**：Agent 完了後、Claude が `npx vitest run <test-path>` を直接実行して失敗を再確認し、失敗出力をユーザーに提示する。
+3. **ユーザー承認後、Red をコミット**。
+4. **Green Agent 起動**：実装ファイルのみを書かせる。テストファイルには触れない指示を明示する。Agent 内で `npx vitest run <test-path>` を実行し、緑になったことを返すよう指示する。
+5. **Claude が再検証**：`npx vitest run <test-path>` と `npx tsc --noEmit` を実行し、緑と型チェック通過をユーザーに提示する。
+6. **ユーザー承認後、Green をコミット**。
+
+#### Agent 呼び出しテンプレート
+
+**Red Agent（テスト記述）**
+
+```
+# Task
+<1〜2 行で何のテストを書くか>
+
+## 対象
+- Bounded Context: <ctx>
+- Layer: domain / application
+- 対象テストファイル: app/tests/contexts/<ctx>/...
+
+## 参照ドキュメント
+- /Users/<user>/.../docs/10_contexts/<ctx>/domain/model.md
+- /Users/<user>/.../docs/10_contexts/<ctx>/application/use-cases.md
+- /Users/<user>/.../CLAUDE.md（コーディング行動ガイドライン）
+
+## 制約
+- 実装ファイルには触れない。テストのみ書く
+- 既存のテストヘルパー（tests/_shared/）があれば再利用する
+
+## 完了条件
+- テストファイルが書かれている
+- `npx vitest run <test-path>` を実行し、失敗していることを確認
+- 失敗出力を返す
+```
+
+**Green Agent（実装）**
+
+```
+# Task
+<1〜2 行で何を実装するか>
+
+## 対象
+- Bounded Context: <ctx>
+- Layer: domain / application
+- 対象実装ファイル: app/src/contexts/<ctx>/...
+- 対応するテスト: app/tests/contexts/<ctx>/...
+
+## 参照ドキュメント
+- /Users/<user>/.../docs/10_contexts/<ctx>/domain/model.md
+- /Users/<user>/.../docs/10_contexts/<ctx>/application/use-cases.md
+- /Users/<user>/.../CLAUDE.md（コーディング行動ガイドライン）
+
+## 制約
+- テストファイルには触れない
+- テストを通すための最小限の実装にとどめる
+
+## 完了条件
+- `npx vitest run <test-path>` が緑
+- `npx tsc --noEmit` がエラーなし
+```
+
 ---
 
 ## 1. 基本思想
