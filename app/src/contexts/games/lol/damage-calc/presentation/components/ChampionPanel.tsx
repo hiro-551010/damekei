@@ -4,6 +4,7 @@ import { ChampionSummaryDto, ItemDto, SkillAllocationDto } from "../../applicati
 import { BuildForm } from "./BuildForm";
 import { SkillAllocationForm } from "./SkillAllocationForm";
 import SearchableSelect, { SelectOption } from "@/shared/components/SearchableSelect";
+import { useLanguage } from "@/shared/contexts/LanguageContext";
 
 type Props = {
   title: string;
@@ -40,9 +41,10 @@ export function ChampionPanel({
   hpPercent,
   onHpPercentChange,
 }: Props) {
+  const { language } = useLanguage();
   const options: SelectOption<string>[] = champions.map((c) => ({
     value: c.id,
-    searchText: c.name,
+    searchText: language === "ja" ? c.name : c.nameEn,
   }));
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import {
   AutoAttackResultDto,
   ChampionPassiveAAResultDto,
@@ -112,8 +113,8 @@ function TableRows({ autoAttack, skills, championPassiveAA }: TableRowsProps) {
         </tr>
       )}
       {skills.map((s) => (
-        <>
-          <tr key={s.slot} className="border-b border-gray-100 hover:bg-gray-50">
+        <React.Fragment key={s.slot}>
+          <tr className="border-b border-gray-100 hover:bg-gray-50">
             <td className="py-2 px-3">
               <span className="font-bold mr-2 uppercase">{s.slot}</span>
               <span className="text-foreground">{s.name}</span>
@@ -139,7 +140,7 @@ function TableRows({ autoAttack, skills, championPassiveAA }: TableRowsProps) {
               <td className="py-2 px-3 text-right tabular-nums font-semibold text-blue-600">{v.hpPercent}%</td>
             </tr>
           ))}
-        </>
+        </React.Fragment>
       ))}
     </>
   );
