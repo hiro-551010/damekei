@@ -99,6 +99,8 @@ export type AutoAttackResultDto = {
   onHitMagicEffectiveResistance: number | null;
   onHitMagicPostMitigation: number | null;
   onHitMagicHpPercent: number | null;
+  onHitPhysicalPreMitigation: number | null;
+  onHitPhysicalEffectiveResistance: number | null;
   onHitPhysicalPostMitigation: number | null;
   onHitPhysicalHpPercent: number | null;
 };

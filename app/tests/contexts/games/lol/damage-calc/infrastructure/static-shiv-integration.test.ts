@@ -106,3 +106,54 @@ describe("スタティックシブ（3087）統合テスト", () => {
     });
   });
 });
+
+const BOTRK_ID = 3153;
+
+describe("BotRK（3153）物理オンヒット pre-mitigation", () => {
+  const useCases = createUseCases(championRepository, itemRepository);
+
+  const baseAttacker = {
+    championId: "Aatrox",
+    level: 1,
+    itemIds: [] as number[],
+    skillAllocation: { q: 1, w: 0, e: 0, r: 0 },
+  };
+
+  const baseDefender = {
+    championId: "Aatrox",
+    level: 1,
+    itemIds: [] as number[],
+  };
+
+  it("BotRK 装備時に onHitPhysicalPreMitigation が null でないこと", async () => {
+    const result = await useCases.calculateDamage(
+      { ...baseAttacker, itemIds: [BOTRK_ID] },
+      baseDefender,
+    );
+    // AutoAttackResultDto にフィールドが存在しないため undefined になり失敗する
+    expect((result.autoAttack as any).onHitPhysicalPreMitigation).toBeDefined();
+  });
+
+  it("onHitPhysicalPreMitigation が Aatrox HP(650) の 9% = 58.5 であること", async () => {
+    // (p.percent / 100) * defStats.hp = 0.09 * 650 = 58.5（四捨五入なし）
+    const result = await useCases.calculateDamage(
+      { ...baseAttacker, itemIds: [BOTRK_ID] },
+      baseDefender,
+    );
+    expect((result.autoAttack as any).onHitPhysicalPreMitigation).toBeCloseTo(58.5, 1);
+  });
+
+  it("onHitPhysicalEffectiveResistance が Aatrox level1 アーマー（38）付近であること", async () => {
+    // Aatrox level1 armor = 38、アーマーペネトレーションなし → effArmor = 38.0
+    const result = await useCases.calculateDamage(
+      { ...baseAttacker, itemIds: [BOTRK_ID] },
+      baseDefender,
+    );
+    expect((result.autoAttack as any).onHitPhysicalEffectiveResistance).toBeCloseTo(38.0, 1);
+  });
+
+  it("BotRK なしの場合 onHitPhysicalPreMitigation が null であること", async () => {
+    const result = await useCases.calculateDamage(baseAttacker, baseDefender);
+    expect((result.autoAttack as any).onHitPhysicalPreMitigation).toBeNull();
+  });
+});

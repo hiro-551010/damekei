@@ -104,6 +104,8 @@ function calculateAutoAttack(attacker: Champion, atkStats: ComputedStats, defSta
     onHitMagicEffectiveResistance: onHitPreMitigation > 0 ? Math.round(effMR * 10) / 10 : null,
     onHitMagicPostMitigation,
     onHitMagicHpPercent,
+    onHitPhysicalPreMitigation: onHitPhysicalPreMitigation > 0 ? onHitPhysicalPreMitigation : null,
+    onHitPhysicalEffectiveResistance: onHitPhysicalPreMitigation > 0 ? Math.round(effArmor * 10) / 10 : null,
     onHitPhysicalPostMitigation,
     onHitPhysicalHpPercent,
   };
