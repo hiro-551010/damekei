@@ -72,7 +72,8 @@ Meraki Analytics から取得した種族データ。リポジトリから取得
 | `nameEn` | `string` | 英語名 |
 | `tier` | `number` | アイテムティア（1=スターター, 2=素材, 3=完成品, 4=特殊完成品） |
 | `stats` | `ItemStats` | 付与ステータス |
-| `passives` | `ItemPassive[]` | ダメージ計算に影響するパッシブ効果（空配列可） |
+| `passives` | `ItemPassive[]` | 攻撃側として機能するパッシブ効果（空配列可） |
+| `defenderPassives` | `DefenderItemPassive[]` | 防御側として機能するパッシブ効果（空配列可） |
 
 ### ItemStats
 
@@ -139,6 +140,40 @@ type ItemPassive =
 > パッシブ数値の正本は `infrastructure/data/item-passives.json`（git 管理）。
 > `items.json` はスクリプト生成で gitignore されており、`passives` フィールドは常に空配列。
 > `item-repository` がロード時に `item-passives.json` をマージする。
+
+### DefenderItemPassive
+
+防御側チャンピオンが装備したとき、**受けるダメージに影響するパッシブ**を型で分類する。
+攻撃側 `ItemPassive` とは別 union として管理する（混用禁止）。
+
+```typescript
+type DefenderItemPassive =
+  | { kind: "critDamageReduction"; percent: number }
+    // 受けるクリティカルダメージを percent% 軽減する。
+    // 計算: critMultiplier = (通常crit倍率) × (1 - percent/100)
+    // IE との重複適用: (1.75 + IE補正) × (1 - 0.20) の順で計算する。
+    // 例: Randuin's Omen → percent: 20
+  | { kind: "magicDamageReduction"; basePercent: number; perStack: number; maxStacks: number }
+    // 受ける魔法ダメージを (basePercent + perStack × stacks)% 軽減する（スタック制）。
+    // 最大軽減率 = basePercent + perStack × maxStacks
+    // デフォルトはスタック最大値で計算する。UI でスタック数を入力可能にする。
+    // 計算: magicPostMitigation × (1 - reductionPercent/100)（armor/MR 軽減の後に適用）
+    // 例: Force of Nature → basePercent: 10, perStack: 2, maxStacks: 5（最大20%）
+```
+
+> パッシブ数値の正本は `infrastructure/data/defender-item-passives.json`（git 管理）。
+> `item-repository` がロード時に `defender-item-passives.json` を読み込み、`Item.defenderPassives` にマージする。
+
+#### スコープ外（現段階）
+
+以下の防御アイテムパッシブはモデリングの複雑さまたはユーザー価値の観点から現フェーズでは対象外。
+
+| アイテム | 理由 |
+|---|---|
+| **Thornmail** (3075) 反射ダメージ | DamageResult が「攻撃側→防御側」の単方向設計のため、逆方向ダメージは別フェーズ |
+| **Abyssal Mask** (8020) 魔法ダメージ+10% | 「防御側アイテムが攻撃側ダメージを増幅」という型の混乱を避けるため。将来的に環境バフとして別実装 |
+| **Frozen Heart** (3110) 攻撃速度-15% | 1発ダメージには影響しない。DPS 計算対応は別フェーズ |
+| **Anathema's Chains** (228001) ダメージ-30% | 単一ターゲット指定が必要で UI コストが高く、環境採用率も低い |
 
 ### SkillSlot
 

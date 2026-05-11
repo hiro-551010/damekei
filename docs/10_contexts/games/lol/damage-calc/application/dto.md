@@ -82,11 +82,13 @@ application 層と presentation 層の間でデータをやりとりする型定
 
 ### DefenderInputDto
 
-| フィールド | 型 |
-|---|---|
-| `championId` | `string` |
-| `level` | `number` |
-| `itemIds` | `number[]` |
+| フィールド | 型 | 説明 |
+|---|---|---|
+| `championId` | `string` | |
+| `level` | `number` | |
+| `itemIds` | `number[]` | |
+| `hpPercent` | `number \| undefined` | 現在HP%（省略時100%） |
+| `fonStacks` | `number \| undefined` | Force of Nature のスタック数（0〜5）。省略時は最大値5として計算し「FoN 最大スタック時」の数値を返す |
 
 ---
 

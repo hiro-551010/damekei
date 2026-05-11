@@ -47,15 +47,32 @@
 
 ### マージロジック
 
-`items.json` の `passives` は常に空配列。`item-passives.json`（アイテム ID をキーとする）から
-対応するパッシブ配列を取得し、`passives` フィールドとしてセットする。
+`items.json` の `passives` / `defenderPassives` は常に空配列。
+ロード時に以下の 2 ファイルをマージする。
+
+| JSON キー | マージ先フィールド |
+|---|---|
+| `item-passives.json` | `Item.passives`（攻撃側パッシブ） |
+| `defender-item-passives.json` | `Item.defenderPassives`（防御側パッシブ） |
+
+アイテム ID をキーとする `Record<string, DefenderItemPassive[]>` 形式。
 
 ### データファイルの役割分担
 
 | ファイル | 管理 | 内容 |
 |---|---|---|
-| `data/items.json` | gitignore（スクリプト生成） | 全アイテムのステータス（`passives` は空） |
-| `data/item-passives.json` | git管理（手動収集） | アイテム ID → `ItemPassive[]` のマッピング |
+| `data/items.json` | gitignore（スクリプト生成） | 全アイテムのステータス（`passives` / `defenderPassives` は空） |
+| `data/item-passives.json` | git管理（手動収集） | アイテム ID → `ItemPassive[]`（攻撃側） |
+| `data/defender-item-passives.json` | git管理（手動収集） | アイテム ID → `DefenderItemPassive[]`（防御側） |
+
+### defender-item-passives.json の現在の定義
+
+```json
+{
+  "3143": [{ "kind": "critDamageReduction", "percent": 20 }],
+  "4401": [{ "kind": "magicDamageReduction", "basePercent": 10, "perStack": 2, "maxStacks": 5 }]
+}
+```
 
 ---
 
